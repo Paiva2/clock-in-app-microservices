@@ -1,2 +1,31 @@
-package com.root.authservice.config;public class ExceptionMapperConfig {
+package com.root.authservice.config;
+
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+public class ExceptionMapperConfig {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<Object> dtoExceptionHandler(MethodArgumentNotValidException exception) {
+        Map<String, Object> responseMap = new LinkedHashMap<>();
+
+        List<String> listErrors = exception.getFieldErrors()
+                        .stream()
+                        .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                        .collect(Collectors.toList());
+
+        responseMap.put("statusCode", 422);
+        responseMap.put("errors", listErrors);
+
+        return ResponseEntity.status(422).body(responseMap);
+    }
 }

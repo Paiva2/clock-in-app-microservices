@@ -1,8 +1,6 @@
 package com.root.authservice.config;
 
 import com.root.crossdbservice.entities.RoleEntity;
-import com.root.crossdbservice.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,14 +10,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class UserDetailsImpl implements UserDetails {
-    @Autowired
-    private UserRepository userRepository;
-
     private final String id; // ref to getUsername
     private final String password;
     private final Set<RoleEntity> roles;
 
-    public UserDetailsImpl(String id, String password, Set<RoleEntity> roles){
+    public UserDetailsImpl(String id, String password, Set<RoleEntity> roles) {
         this.id = id;
         this.password = password;
         this.roles = roles;

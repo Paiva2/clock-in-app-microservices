@@ -2,6 +2,7 @@ package com.root.authservice.services;
 
 import com.root.authservice.exceptions.BadRequestException;
 import com.root.authservice.exceptions.ConflictException;
+import com.root.authservice.exceptions.ForbiddenException;
 import com.root.authservice.exceptions.NotFoundException;
 import com.root.crossdbservice.entities.RoleEntity;
 import com.root.crossdbservice.entities.UserEntity;
@@ -31,23 +32,23 @@ public class AuthService {
 
     @Transactional
     public void registerRequester(UserEntity newUser) {
-        if(newUser == null){
+        if (newUser == null) {
             throw new BadRequestException("newUser can't be null");
         }
 
-        if(newUser.getPassword().length() < 6){
+        if (newUser.getPassword().length() < 6) {
             throw new BadRequestException("password must have at least 6 characters");
         }
 
         Optional<UserEntity> doesUserAlreadyExists = this.userRepository.findByEmail(newUser.getEmail());
 
-        if(doesUserAlreadyExists.isPresent()){
+        if (doesUserAlreadyExists.isPresent()) {
             throw new ConflictException("E-mail already registered.");
         }
 
         newUser.setPassword(this.passwordEncoder.encode(newUser.getPassword()));
 
-        UserEntity user =  this.userRepository.save(newUser);
+        UserEntity user = this.userRepository.save(newUser);
 
         RoleEntity defaultRole = this.roleRepository.findByRole(RoleEntity.Role.USER)
                 .orElseThrow(() -> new NotFoundException("Role User not found."));
@@ -57,5 +58,27 @@ public class AuthService {
         userRole.setUser(user);
 
         this.userRoleRepository.save(userRole);
+    }
+
+    public UserEntity authorizeRequester(UserEntity user) {
+        if (user == null) {
+            throw new BadRequestException("User can't be empty");
+        }
+
+        if (user.getEmail() == null) {
+            throw new BadRequestException("User e-mail can't be empty");
+        }
+
+        UserEntity findUser = this.userRepository.findByEmail(user.getEmail())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        boolean doesPasswordsMatches =
+                this.passwordEncoder.matches(user.getPassword(), findUser.getPassword());
+
+        if (!doesPasswordsMatches) {
+            throw new ForbiddenException("Wrong credentials.");
+        }
+
+        return findUser;
     }
 }

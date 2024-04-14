@@ -1,6 +1,6 @@
 package com.root.authservice.dto;
 
-import com.root.crossdbservice.UserEntity;
+import com.root.crossdbservice.entities.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -2,22 +2,34 @@ package com.root.authservice.services;
 
 import com.root.authservice.exceptions.BadRequestException;
 import com.root.authservice.exceptions.ConflictException;
-import com.root.authservice.repositories.UserRepository;
-import com.root.crossdbservice.UserEntity;
+import com.root.authservice.exceptions.NotFoundException;
+import com.root.crossdbservice.entities.RoleEntity;
+import com.root.crossdbservice.entities.UserEntity;
+import com.root.crossdbservice.entities.UserRole;
+import com.root.crossdbservice.repositories.RoleRepository;
+import com.root.crossdbservice.repositories.UserRepository;
+import com.root.crossdbservice.repositories.UserRoleRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
+
+import javax.transaction.Transactional;
+import java.util.*;
 
 @Service
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRoleRepository userRoleRepository;
+    private final RoleRepository roleRepository;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userRoleRepository = userRoleRepository;
+        this.roleRepository = roleRepository;
     }
 
+    @Transactional
     public void registerRequester(UserEntity newUser) {
         if(newUser == null){
             throw new BadRequestException("newUser can't be null");
@@ -35,6 +47,15 @@ public class AuthService {
 
         newUser.setPassword(this.passwordEncoder.encode(newUser.getPassword()));
 
-        this.userRepository.save(newUser);
+        UserEntity user =  this.userRepository.save(newUser);
+
+        RoleEntity defaultRole = this.roleRepository.findByRole(RoleEntity.Role.USER)
+                .orElseThrow(() -> new NotFoundException("Role User not found."));
+
+        UserRole userRole = new UserRole();
+        userRole.setRole(defaultRole);
+        userRole.setUser(user);
+
+        this.userRoleRepository.save(userRole);
     }
 }

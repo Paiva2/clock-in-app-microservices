@@ -11,15 +11,24 @@ public class UserRole {
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "user_id")
-    UserEntity user;
+    private UserEntity user;
 
     @ManyToOne
     @MapsId("roleId")
     @JoinColumn(name = "role_id")
-    RoleEntity role;
+    private RoleEntity role;
+
+    public UserRole() {
+    }
 
     public UserRoleKey getId() {
         return id;
+    }
+
+    public UserRole(UserRoleKey id, UserEntity user, RoleEntity role) {
+        this.id = id;
+        this.user = user;
+        this.role = role;
     }
 
     public void setId(UserRoleKey id) {

@@ -25,7 +25,9 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeRequests(req -> {
-                    req.antMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll();
+                    //req.antMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll();
+                    req.antMatchers(HttpMethod.POST, "/api/v1/auth/register/employee").hasAnyRole("ADMIN", "HUMAN_RESOURCES");
+                    req.antMatchers(HttpMethod.POST, "/api/v1/auth/register/hr").hasRole("ADMIN");
                     req.antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll();
                     req.anyRequest().authenticated();
                 })

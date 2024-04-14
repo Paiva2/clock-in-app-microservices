@@ -49,7 +49,7 @@ public class FilterChainConfig extends OncePerRequestFilter {
         Set<RoleEntity> roles = new HashSet<>();
 
         getUser.getUserRoles().forEach(userRole -> {
-            roles.add(new RoleEntity(userRole.getRole().getRole()));
+            roles.add(new RoleEntity(userRole.getRole().getRoleName()));
         });
 
         UserDetails user = new UserDetailsImpl(

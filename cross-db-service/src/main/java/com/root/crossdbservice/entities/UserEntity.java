@@ -1,7 +1,7 @@
 package com.root.crossdbservice.entities;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -24,11 +24,14 @@ public class UserEntity {
     @Column(name = "email", unique = true)
     private String email;
 
-    @CreatedDate
-    @Column(name = "created_at")
+    @Column(name = "position", nullable = true)
+    private String position;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private Date createdAt;
 
-    @LastModifiedDate
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
 
@@ -38,11 +41,23 @@ public class UserEntity {
     public UserEntity() {
     }
 
-    public UserEntity(UUID id, String name, String password, String email) {
+    public UserEntity(UUID id, String name, String password, String email, String position, Date createdAt, Date updatedAt, Set<UserRole> userRoles) {
         this.id = id;
         this.name = name;
         this.password = password;
         this.email = email;
+        this.position = position;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.userRoles = userRoles;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     public Date getCreatedAt() {

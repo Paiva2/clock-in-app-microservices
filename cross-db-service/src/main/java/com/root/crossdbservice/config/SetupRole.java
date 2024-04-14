@@ -18,11 +18,12 @@ public class SetupRole implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         Optional<RoleEntity> rolesExists = this.roleRepository.findByRole(RoleEntity.Role.USER);
-        if(rolesExists.isPresent()) return;
+        if (rolesExists.isPresent()) return;
 
-        Set<RoleEntity> roleSet = new HashSet<RoleEntity>(){{
+        Set<RoleEntity> roleSet = new HashSet<RoleEntity>() {{
             add(new RoleEntity(RoleEntity.Role.USER));
             add(new RoleEntity(RoleEntity.Role.ADMIN));
+            add(new RoleEntity(RoleEntity.Role.HUMAN_RESOURCES));
         }};
 
         this.roleRepository.saveAll(roleSet);

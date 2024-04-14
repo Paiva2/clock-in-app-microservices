@@ -31,7 +31,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void registerRequester(UserEntity newUser) {
+    public void registerBasic(UserEntity newUser) {
         if (newUser == null) {
             throw new BadRequestException("newUser can't be null");
         }
@@ -80,5 +80,46 @@ public class AuthService {
         }
 
         return findUser;
+    }
+
+    public UserEntity requesterProfile(UUID userId) {
+        if (userId == null) {
+            throw new BadRequestException("userId can't be empty");
+        }
+
+        UserEntity findUser = this.userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        return findUser;
+    }
+
+    public void registerHumanResource(UserEntity newHr) {
+        if (newHr == null) {
+            throw new BadRequestException("newHr can't be empty");
+        }
+
+        if (newHr.getPassword().length() < 6) {
+            throw new BadRequestException("Password must have at least 6 characters");
+        }
+
+        Optional<UserEntity> doesHrAlreadyExists = this.userRepository.findByEmail(newHr.getEmail());
+
+        if (doesHrAlreadyExists.isPresent()) {
+            throw new ConflictException("E-mail already being used.");
+        }
+
+        newHr.setPassword(this.passwordEncoder.encode(newHr.getPassword()));
+        newHr.setPosition("Human Resources");
+
+        RoleEntity getHrRole = this.roleRepository.findByRole(RoleEntity.Role.HUMAN_RESOURCES)
+                .orElseThrow(() -> new NotFoundException("Human Resource role not found"));
+
+        UserEntity saveUser = this.userRepository.save(newHr);
+
+        UserRole newUserRole = new UserRole();
+        newUserRole.setRole(getHrRole);
+        newUserRole.setUser(saveUser);
+
+        this.userRoleRepository.save(newUserRole);
     }
 }

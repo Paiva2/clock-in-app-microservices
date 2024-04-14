@@ -24,7 +24,7 @@ public class UserDetailsImpl implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles
                 .stream()
-                .map(role -> "ROLE_".concat(role.getRole().getRoleName()))
+                .map(role -> "ROLE_".concat(role.getRoleName().getRoleValue()))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
     }

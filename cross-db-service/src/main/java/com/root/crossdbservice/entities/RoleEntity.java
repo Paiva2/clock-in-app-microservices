@@ -1,7 +1,7 @@
 package com.root.crossdbservice.entities;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -16,34 +16,33 @@ public class RoleEntity {
     private UUID id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", unique = true)
-    private Role role;
+    @Column(name = "role_name", unique = true)
+    private Role roleName;
 
-    @CreatedDate
-    @Column(name = "created_at")
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private Date createdAt;
 
-    @LastModifiedDate
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
 
     @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<UserRole> userRoles;
 
-    public RoleEntity() {}
-
-    public RoleEntity(UUID id, Role role, Date createdAt, Date updatedAt, Set<UserRole> userRoless) {
-        this.id = id;
-        this.role = role;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.userRoles = userRoless;
+    public RoleEntity() {
     }
 
-    public RoleEntity(Role role) {
-        this.role = role;;
-        this.createdAt = new Date();
-        this.updatedAt = new Date();
+    public RoleEntity(UUID id, Role roleName, Date createdAt, Date updatedAt, Set<UserRole> userRoles) {
+        this.id = id;
+        this.roleName = roleName;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.userRoles = userRoles;
+    }
+
+    public RoleEntity(Role roleName) {
+        this.roleName = roleName;
     }
 
     public UUID getId() {
@@ -54,12 +53,12 @@ public class RoleEntity {
         this.id = id;
     }
 
-    public Role getRole() {
-        return role;
+    public Role getRoleName() {
+        return roleName;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setRoleName(Role roleName) {
+        this.roleName = roleName;
     }
 
     public Date getCreatedAt() {
@@ -89,13 +88,13 @@ public class RoleEntity {
     public enum Role {
         USER("USER"), ADMIN("ADMIN"), HUMAN_RESOURCES("HUMAN_RESOURCES");
 
-        String role;
+        final String role;
 
-        Role(String role){
+        Role(String role) {
             this.role = role;
         }
 
-        public String getRoleName(){
+        public String getRoleValue() {
             return this.role;
         }
     }

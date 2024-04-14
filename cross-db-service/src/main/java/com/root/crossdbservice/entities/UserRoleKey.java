@@ -8,6 +8,7 @@ import java.util.UUID;
 @Embeddable
 public class UserRoleKey implements Serializable {
     private static final long serialVersionUID = 8242738535542671872L;
+
     @Column(name = "user_id")
     private UUID userId;
 

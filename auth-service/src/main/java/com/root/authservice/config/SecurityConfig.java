@@ -15,18 +15,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-/*    @Autowired
-    private FilterChainConfig filterChainConfig;*/
+    private final FilterChainConfig filterChainConfig;
+
+    public SecurityConfig(FilterChainConfig filterChainConfig) {
+        this.filterChainConfig = filterChainConfig;
+    }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeRequests(req -> {
-                    req.antMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll();
-                    req.anyRequest().permitAll();
+                    req.antMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll();
+                    req.antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll();
+                    req.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                //.addFilterBefore(filterChainConfig, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(filterChainConfig, UsernamePasswordAuthenticationFilter.class)
                 .cors().and().csrf().disable()
                 .build();
     }

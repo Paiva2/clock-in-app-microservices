@@ -89,7 +89,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
-                    <mainClass>com.root.gatewayservice.GatewayServiceApplication</mainClass>
+                    <mainClass>com.root.eurekagateway.EurekaGatewayApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

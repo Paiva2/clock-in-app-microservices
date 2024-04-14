@@ -1,13 +1,17 @@
 package com.root.authservice.config;
 
+import com.netflix.discovery.converters.Auto;
 import com.root.authservice.utils.JwtHandler;
 import com.root.crossdbservice.entities.RoleEntity;
 import com.root.crossdbservice.entities.UserEntity;
 import com.root.crossdbservice.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,19 +21,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Component
-public class FilterChainConfig /*extends OncePerRequestFilter*/ {
-   /* private final UserRepository userRepository;
-    private final JwtHandler jwtHandler;
+public class FilterChainConfig extends OncePerRequestFilter  {
+    @Autowired
+    private UserRepository userRepository;
 
-    public FilterChainConfig(UserRepository userRepository, JwtHandler jwtHandler) {
-        this.userRepository = userRepository;
-        this.jwtHandler = jwtHandler;
-    }
+    @Autowired
+    private JwtHandler jwtHandler;
 
     @Override
     protected void doFilterInternal(
@@ -69,10 +69,19 @@ public class FilterChainConfig /*extends OncePerRequestFilter*/ {
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+
+        List<String> openPaths = Arrays.asList("/api/v1/auth/register", "/api/v1/auth/login");
+
+        return openPaths.contains(path);
+    }
+
     private String retrieveToken(HttpServletRequest request){
         String authHeader = request.getHeader("Bearer");
         if(authHeader == null) return null;
 
         return authHeader.replace("Bearer ", "");
-    }*/
+    }
 }

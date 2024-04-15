@@ -86,7 +86,10 @@ public class RoleEntity {
     }
 
     public enum Role {
-        USER("USER"), ADMIN("ADMIN"), HUMAN_RESOURCES("HUMAN_RESOURCES");
+        USER("USER"),
+        ADMIN("ADMIN"),
+        HUMAN_RESOURCES("HUMAN_RESOURCES"),
+        MANAGER("MANAGER");
 
         final String role;
 

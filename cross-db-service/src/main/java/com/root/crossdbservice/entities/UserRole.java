@@ -1,11 +1,16 @@
 package com.root.crossdbservice.entities;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
-@Table(name = "users_roles")
+@Table(name = "tb_users_roles")
 public class UserRole {
     @EmbeddedId
+    @JoinColumn(name = "id")
     private UserRoleKey id = new UserRoleKey();
 
     @ManyToOne
@@ -18,6 +23,14 @@ public class UserRole {
     @JoinColumn(name = "role_id")
     private RoleEntity role;
 
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private Date createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Date updatedAt;
+
     public UserRole() {
     }
 
@@ -25,10 +38,28 @@ public class UserRole {
         return id;
     }
 
-    public UserRole(UserRoleKey id, UserEntity user, RoleEntity role) {
+    public UserRole(UserRoleKey id, UserEntity user, RoleEntity role, Date createdAt, Date updatedAt) {
         this.id = id;
         this.user = user;
         this.role = role;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public void setId(UserRoleKey id) {

@@ -1,6 +1,8 @@
 package com.root.crossdbservice.entities;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
@@ -36,12 +38,27 @@ public class UserEntity {
     private Date updatedAt;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<UserRole> userRoles;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Set<UserManager> userManager;
 
     public UserEntity() {
     }
 
-    public UserEntity(UUID id, String name, String password, String email, String position, Date createdAt, Date updatedAt, Set<UserRole> userRoles) {
+    public UserEntity(
+            UUID id,
+            String name,
+            String password,
+            String email,
+            String position,
+            Date createdAt,
+            Date updatedAt,
+            Set<UserRole> userRoles,
+            Set<UserManager> userManager
+    ) {
         this.id = id;
         this.name = name;
         this.password = password;
@@ -50,6 +67,15 @@ public class UserEntity {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.userRoles = userRoles;
+        this.userManager = userManager;
+    }
+
+    public Set<UserManager> getUserManager() {
+        return userManager;
+    }
+
+    public void setUserManager(Set<UserManager> userManager) {
+        this.userManager = userManager;
     }
 
     public String getPosition() {

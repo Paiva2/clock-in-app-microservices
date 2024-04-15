@@ -16,7 +16,10 @@ public class EurekaGatewayApplication {
                 .route("auth-service", route -> route.path("/auth-service/**")
                         .filters(filter -> filter.stripPrefix(1))
                         .uri("lb://AUTH-SERVICE"))
-                .build();
+                .route("employee-service", route -> route.path("/employee-service/**")
+                        .filters(filter -> filter.stripPrefix(1).rewritePath("/employee-service/(?<segment>.*)", "/employee-service/${segment}"))
+                        .uri("lb://EMPLOYEE-SERVICE")
+                ).build();
     }
 
     public static void main(String[] args) {

@@ -3,11 +3,13 @@ package com.root.authservice.controllers;
 import com.root.authservice.clients.EmployeeClientRest;
 import com.root.authservice.dto.in.auth.RegisterUserDto;
 import com.root.authservice.dto.out.auth.ProfileResponseDTO;
+import com.root.crossdbservice.entities.RoleEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -47,5 +49,14 @@ public class EmployeeServiceController {
         ProfileResponseDTO profileResponseDTO = this.employeeClientRest.requestProfile(requesterId);
 
         return ResponseEntity.status(200).body(profileResponseDTO);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<List<ProfileResponseDTO>> listAllByRoleUnpageable(@RequestParam("role") RoleEntity.Role role) {
+        List<ProfileResponseDTO> filtered = this.employeeClientRest.requestListAllByRoleNotPageable(
+                role
+        );
+
+        return ResponseEntity.status(200).body(filtered);
     }
 }

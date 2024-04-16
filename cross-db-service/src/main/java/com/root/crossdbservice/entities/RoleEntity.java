@@ -1,5 +1,6 @@
 package com.root.crossdbservice.entities;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 

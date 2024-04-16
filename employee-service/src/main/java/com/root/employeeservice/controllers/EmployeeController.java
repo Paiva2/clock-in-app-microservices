@@ -1,6 +1,7 @@
 package com.root.employeeservice.controllers;
 
 import com.google.common.collect.Sets;
+import com.root.crossdbservice.entities.RoleEntity;
 import com.root.crossdbservice.entities.UserEntity;
 import com.root.employeeservice.dtos.in.RegisterUserDto;
 import com.root.employeeservice.dtos.out.ProfileResponseDTO;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,27 @@ public class EmployeeController {
     @PostMapping("/register/manager")
     public void registerManager(@RequestBody @Valid RegisterUserDto dto) {
         this.employeeService.registerManager(dto.toEntity());
+    }
+
+    @GetMapping("/list/all")
+    public List<ProfileResponseDTO> listAllUsersByRoleNotPageable(@RequestParam("role") RoleEntity.Role role) {
+        List<UserEntity> usersFiltered = this.employeeService.listEmployeesByRoleUnpaginable(
+                role
+        );
+
+        List<ProfileResponseDTO> profiles = usersFiltered.stream().map(user ->
+                new ProfileResponseDTO(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail(),
+                        Sets.newHashSet(user.getUserRoles().stream()
+                                .map(userRole -> userRole.getRole().getRoleName().getRoleValue())
+                                .collect(Collectors.toList())
+                        ),
+                        user.getCreatedAt())
+        ).collect(Collectors.toList());
+
+        return profiles;
     }
 
     @GetMapping("/profile")

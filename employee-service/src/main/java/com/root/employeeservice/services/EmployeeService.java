@@ -1,5 +1,6 @@
 package com.root.employeeservice.services;
 
+import com.google.common.collect.Sets;
 import com.root.crossdbservice.entities.RoleEntity;
 import com.root.crossdbservice.entities.UserEntity;
 import com.root.crossdbservice.entities.UserRole;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
@@ -55,6 +57,16 @@ public class EmployeeService {
 
     public void registerManager(UserEntity newManager) {
         this.registerUser(newManager, RoleEntity.Role.MANAGER, newManager.getPosition());
+    }
+
+    public List<UserEntity> listEmployeesByRoleUnpaginable(RoleEntity.Role role) {
+        if (role == null) {
+            throw new BadRequestException("Role can't be empty");
+        }
+
+        List<UserEntity> employees = this.userRepository.findAllByRole(role.getRoleValue());
+
+        return new ArrayList<>(Sets.newHashSet(employees));
     }
 
     @Transactional

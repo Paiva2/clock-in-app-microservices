@@ -17,6 +17,7 @@ public class ProfileResponseDTO {
     private UUID id;
     private String name;
     private String email;
+    private String position;
     private Set<String> roles;
     private Date createdAt;
 }

@@ -3,7 +3,9 @@ package com.root.authservice.controllers;
 import com.root.authservice.clients.EmployeeClientRest;
 import com.root.authservice.dto.in.auth.RegisterUserDto;
 import com.root.authservice.dto.in.auth.SuperiorAttachRequestDTO;
+import com.root.authservice.dto.in.auth.UpdateEmployeeProfileDTO;
 import com.root.authservice.dto.out.auth.ProfileResponseDTO;
+import com.root.authservice.dto.out.auth.ProfileUpdateResponseDTO;
 import com.root.crossdbservice.entities.RoleEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -79,6 +81,22 @@ public class EmployeeServiceController {
     @PutMapping("/active/{employeeId}")
     public ResponseEntity<Map<String, String>> reActiveAnEmployee(@PathVariable("employeeId") UUID employeeId) {
         Map<String, String> clientResponse = this.employeeClientRest.reActiveEmployee(employeeId);
+
+        return ResponseEntity.status(201).body(clientResponse);
+    }
+
+    @PatchMapping("/update/{employeeId}")
+    public ResponseEntity<ProfileUpdateResponseDTO> updateEmployee(
+            @PathVariable("employeeId") UUID employeeId,
+            @RequestBody @Valid UpdateEmployeeProfileDTO dto,
+            Authentication authentication
+    ) {
+        dto.setRequesterId(UUID.fromString(authentication.getName()));
+
+        ProfileUpdateResponseDTO clientResponse = this.employeeClientRest.updateEmployeeProfile(
+                employeeId,
+                dto
+        );
 
         return ResponseEntity.status(201).body(clientResponse);
     }

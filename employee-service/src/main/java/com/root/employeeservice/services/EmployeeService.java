@@ -1,6 +1,6 @@
 package com.root.employeeservice.services;
 
-import com.google.common.collect.Sets;
+
 import com.root.crossdbservice.entities.RoleEntity;
 import com.root.crossdbservice.entities.UserEntity;
 import com.root.crossdbservice.entities.UserManager;
@@ -10,12 +10,14 @@ import com.root.crossdbservice.repositories.UserManagerRepository;
 import com.root.crossdbservice.repositories.UserRepository;
 import com.root.crossdbservice.repositories.UserRoleRepository;
 import com.root.employeeservice.exceptions.*;
+import com.root.employeeservice.utils.CloneProperties;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class EmployeeService {
@@ -24,6 +26,10 @@ public class EmployeeService {
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
     private final UserManagerRepository userManagerRepository;
+    private final CloneProperties cloneProperties;
+
+    private final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
     protected final List<String> rolesWithPermissionToBeSuperior = Arrays.asList(
             RoleEntity.Role.ADMIN.getRoleValue(),
@@ -31,12 +37,19 @@ public class EmployeeService {
             RoleEntity.Role.HUMAN_RESOURCES.getRoleValue()
     );
 
-    public EmployeeService(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository, UserManagerRepository userManagerRepository) {
+    public EmployeeService(
+            UserRepository userRepository,
+            UserRoleRepository userRoleRepository,
+            RoleRepository roleRepository,
+            UserManagerRepository userManagerRepository,
+            CloneProperties cloneProperties
+    ) {
         this.userRepository = userRepository;
         this.userManagerRepository = userManagerRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.cloneProperties = cloneProperties;
         this.userRoleRepository = userRoleRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
     public UserEntity requesterProfile(UUID userId) {
@@ -141,6 +154,75 @@ public class EmployeeService {
         UserEntity performDisable = this.userRepository.save(getEmployee);
 
         return performDisable;
+    }
+
+    public UserEntity updateEmployeeProfile(UUID requesterId, UserEntity employeeUpdated) {
+        if (requesterId == null) {
+            throw new BadRequestException("Requester id can't be empty");
+        }
+
+        if (employeeUpdated == null) {
+            throw new BadRequestException("Employee can't be empty");
+        } else if (employeeUpdated.getId() == null) {
+            throw new BadRequestException("Employee id can't be empty");
+        }
+
+        UserEntity getEmployee = this.userRepository.findById(employeeUpdated.getId())
+                .orElseThrow(() -> new NotFoundException("Employee not found"));
+
+        if (!requesterId.equals(getEmployee.getId())) {
+            Optional<UserManager> doesRequesterIsEmployeeManager = this.userManagerRepository.findByUserAndManager(
+                    getEmployee.getId(),
+                    requesterId
+            );
+
+            if (!doesRequesterIsEmployeeManager.isPresent()) {
+                this.checkPermissionsToUpdateEmployee(requesterId);
+            }
+        }
+
+        if (employeeUpdated.getPassword() != null) {
+            if (employeeUpdated.getPassword().length() < 6) {
+                throw new BadRequestException("Password must have at least 6 characters");
+            }
+
+            employeeUpdated.setPassword(this.passwordEncoder.encode(employeeUpdated.getPassword()));
+        }
+
+        if (employeeUpdated.getEmail() != null) {
+            if (!this.isEmailValid(getEmployee.getEmail())) {
+                throw new BadRequestException("Invalid e-mail");
+            }
+
+            Optional<UserEntity> isEmailAlreadyBeingUsed = this.userRepository.findByEmail(employeeUpdated.getEmail());
+
+            if (isEmailAlreadyBeingUsed.isPresent()) {
+                throw new ConflictException("Updated E-mail is already being used");
+            }
+        }
+
+        this.cloneProperties.copyNonNullProperties(employeeUpdated, getEmployee);
+
+        return this.userRepository.save(getEmployee);
+    }
+
+    private boolean isEmailValid(String emailStr) {
+        Matcher matcher = this.VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
+        return matcher.matches();
+    }
+
+    protected void checkPermissionsToUpdateEmployee(UUID updateRequesterId) {
+        UserEntity getRequester = this.userRepository.findById(updateRequesterId)
+                .orElseThrow(() -> new NotFoundException("Requester not found"));
+
+        getRequester.getUserRoles().stream().filter(role -> {
+            String getRole = role.getRole().getRoleName().getRoleValue();
+
+            return getRole.equals(RoleEntity.Role.ADMIN.getRoleValue()) ||
+                    getRole.equals(RoleEntity.Role.HUMAN_RESOURCES.getRoleValue());
+        }).findAny().orElseThrow(() -> new ForbiddenException(
+                "Only the direct Manager, Human Resources or Admins can perform actions on employee profile.")
+        );
     }
 
     @Transactional

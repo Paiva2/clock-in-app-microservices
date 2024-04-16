@@ -6,11 +6,14 @@ import com.root.crossdbservice.entities.UserEntity;
 import com.root.crossdbservice.entities.UserManager;
 import com.root.employeeservice.dtos.in.RegisterUserDto;
 import com.root.employeeservice.dtos.in.SuperiorAttachRequestDTO;
+import com.root.employeeservice.dtos.in.UpdateEmployeeProfileDTO;
 import com.root.employeeservice.dtos.out.ProfileResponseDTO;
+import com.root.employeeservice.dtos.out.ProfileUpdateResponseDTO;
 import com.root.employeeservice.services.EmployeeService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.ws.rs.QueryParam;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,6 +52,7 @@ public class EmployeeController {
                         user.getId(),
                         user.getName(),
                         user.getEmail(),
+                        user.getPosition(),
                         Sets.newHashSet(user.getUserRoles().stream()
                                 .map(userRole -> userRole.getRole().getRoleName().getRoleValue())
                                 .collect(Collectors.toList())
@@ -71,6 +75,7 @@ public class EmployeeController {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
+                user.getPosition(),
                 Sets.newHashSet(userRoles),
                 user.getCreatedAt()
         );
@@ -118,5 +123,26 @@ public class EmployeeController {
         }};
 
         return responseBody;
+    }
+
+    @PutMapping("/update/{employeeId}")
+    public ProfileUpdateResponseDTO updateEmployeeProfile(
+            @PathVariable("employeeId") UUID employeeId,
+            @RequestBody @Valid UpdateEmployeeProfileDTO dto
+    ) {
+        UserEntity employeeUpdated =
+                this.employeeService.updateEmployeeProfile(
+                        UUID.fromString(dto.getRequesterId()), dto.toEntity(employeeId)
+                );
+
+        ProfileUpdateResponseDTO profileUpdateResponseDto = new ProfileUpdateResponseDTO(
+                employeeUpdated.getId(),
+                employeeUpdated.getName(),
+                employeeUpdated.getEmail(),
+                employeeUpdated.getPosition(),
+                employeeUpdated.getUpdatedAt()
+        );
+
+        return profileUpdateResponseDto;
     }
 }

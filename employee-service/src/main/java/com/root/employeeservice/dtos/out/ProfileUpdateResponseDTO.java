@@ -6,18 +6,17 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
-import java.util.Set;
 import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProfileResponseDTO {
+public class ProfileUpdateResponseDTO {
     private UUID id;
     private String name;
     private String email;
     private String position;
-    private Set<String> roles;
-    private Date createdAt;
+    private Date updatedAt;
+
 }

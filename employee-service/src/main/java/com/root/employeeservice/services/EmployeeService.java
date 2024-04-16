@@ -13,6 +13,7 @@ import com.root.employeeservice.exceptions.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 import java.util.*;
 
@@ -114,6 +115,26 @@ public class EmployeeService {
         UserManager performAttachment = this.userManagerRepository.save(userSuperiorAttach);
 
         return performAttachment;
+    }
+
+    public UserEntity disableEmployee(UUID employeeId) {
+        if (employeeId == null) {
+            throw new BadRequestException("superiorId can't be empty");
+        }
+
+        UserEntity getEmployee = this.userRepository.findById(employeeId)
+                .orElseThrow(() -> new NotFoundException("Employee not found"));
+
+        if (!getEmployee.getDisabled()) {
+            throw new ConflictException("Employee is already disabled");
+        }
+
+        getEmployee.setDisabled(true);
+        getEmployee.setDisabledAt(new Date());
+
+        UserEntity performDisable = this.userRepository.save(getEmployee);
+
+        return performDisable;
     }
 
     @Transactional

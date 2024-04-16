@@ -8,6 +8,7 @@ import com.root.employeeservice.dtos.in.RegisterUserDto;
 import com.root.employeeservice.dtos.in.SuperiorAttachRequestDTO;
 import com.root.employeeservice.dtos.out.ProfileResponseDTO;
 import com.root.employeeservice.services.EmployeeService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -90,5 +91,19 @@ public class EmployeeController {
         }};
 
         return response;
+    }
+
+    @DeleteMapping("/disable/{employeeId}")
+    public Map<String, String> disableActiveEmployee(
+            @PathVariable(name = "employeeId") UUID employeeId
+    ) {
+        UserEntity employeeDisabled = this.employeeService.disableEmployee(employeeId);
+
+        Map<String, String> responseBody = new LinkedHashMap<String, String>() {{
+            put("message", "Employee disabled successfully.");
+            put("employeeId", employeeDisabled.getId().toString());
+        }};
+
+        return responseBody;
     }
 }

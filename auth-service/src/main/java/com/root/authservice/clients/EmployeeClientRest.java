@@ -6,11 +6,9 @@ import com.root.authservice.dto.out.auth.ProfileResponseDTO;
 import com.root.crossdbservice.entities.RoleEntity;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import javax.ws.rs.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,6 +30,9 @@ public interface EmployeeClientRest {
 
     @PostMapping(value = "/attach-superior")
     Map<String, String> attachSuperiorToEmployee(@RequestBody SuperiorAttachRequestDTO requestBody);
+
+    @DeleteMapping(value = "/disable/{employeeId}")
+    Map<String, String> disableEmployee(@PathVariable("employeeId") UUID employeeId);
 
     @GetMapping("/profile")
     ProfileResponseDTO requestProfile(@RequestParam("userId") UUID userId);

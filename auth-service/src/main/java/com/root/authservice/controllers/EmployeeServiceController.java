@@ -68,4 +68,12 @@ public class EmployeeServiceController {
 
         return ResponseEntity.status(201).body(clientResponse);
     }
+
+    @DeleteMapping("/disable/{employeeId}")
+    public ResponseEntity<Map<String, String>> disableAnEmployee(@PathVariable("employeeId") UUID employeeId) {
+        Map<String, String> clientResponse = this.employeeClientRest.disableEmployee(employeeId);
+
+        return ResponseEntity.status(201).body(clientResponse);
+    }
+
 }

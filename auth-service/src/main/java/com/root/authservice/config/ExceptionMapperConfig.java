@@ -1,5 +1,7 @@
 package com.root.authservice.config;
 
+import com.google.gson.Gson;
+import com.root.authservice.mappers.ClientResponseErrorMapper;
 import feign.FeignException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
@@ -30,15 +32,13 @@ public class ExceptionMapperConfig {
         return ResponseEntity.status(422).body(responseMap);
     }
 
-
-    // TODO: FORMAT ERRORS
     @ExceptionHandler(FeignException.class)
     protected ResponseEntity<Object> feignException(FeignException exception) {
-        Map<String, Object> responseMap = new LinkedHashMap<>();
-
-        responseMap.put("statusCode", exception.status());
-        responseMap.put("errors", exception.getMessage());
-
-        return ResponseEntity.status(422).body(responseMap);
+        ClientResponseErrorMapper feignErrorMapper = new Gson().fromJson(
+                exception.contentUTF8(),
+                ClientResponseErrorMapper.class
+        );
+        
+        return ResponseEntity.status(exception.status()).body(feignErrorMapper);
     }
 }

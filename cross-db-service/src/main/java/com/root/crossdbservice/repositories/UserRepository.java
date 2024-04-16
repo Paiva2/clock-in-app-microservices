@@ -22,12 +22,12 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
             "INNER JOIN tb_roles rl ON rl.id = url.role_id " +
             "WHERE rl.role_name = :role) " +
 
-            "SELECT * from tb_users usr " +
+            "SELECT DISTINCT ON(usr.id) * from tb_users usr " +
             "INNER JOIN tb_users_roles url ON url.user_id = usr.id " +
             "LEFT JOIN tb_roles rl ON rl.id = url.role_id " +
             "WHERE url.user_id in (SELECT * FROM to_list)" +
-            "ORDER BY usr.created_at DESC",
+            "ORDER BY usr.id, usr.created_at DESC",
             nativeQuery = true
     )
-    List<UserEntity> findAllByRole(@Param("role") String role);
+    List<UserEntity> findAllByRoleCustom(@Param("role") String role);
 }

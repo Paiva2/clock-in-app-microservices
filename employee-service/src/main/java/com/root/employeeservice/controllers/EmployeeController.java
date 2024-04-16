@@ -3,15 +3,15 @@ package com.root.employeeservice.controllers;
 import com.google.common.collect.Sets;
 import com.root.crossdbservice.entities.RoleEntity;
 import com.root.crossdbservice.entities.UserEntity;
+import com.root.crossdbservice.entities.UserManager;
 import com.root.employeeservice.dtos.in.RegisterUserDto;
+import com.root.employeeservice.dtos.in.SuperiorAttachRequestDTO;
 import com.root.employeeservice.dtos.out.ProfileResponseDTO;
 import com.root.employeeservice.services.EmployeeService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -76,5 +76,19 @@ public class EmployeeController {
         );
 
         return profileResponseDTO;
+    }
+
+    @PostMapping("/attach-superior")
+    public Map<String, String> attachNewSuperiorToEmployee(@RequestBody @Valid SuperiorAttachRequestDTO dto) {
+        UserManager managerAttached = this.employeeService.attachSuperiorToEmployee(
+                UUID.fromString(dto.getEmployeeId()), UUID.fromString(dto.getSuperiorId())
+        );
+
+        Map<String, String> response = new LinkedHashMap<String, String>() {{
+            put("employee", managerAttached.getUser().getName());
+            put("manager_attached", managerAttached.getManager().getName());
+        }};
+
+        return response;
     }
 }

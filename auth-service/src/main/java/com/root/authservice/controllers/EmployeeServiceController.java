@@ -2,6 +2,7 @@ package com.root.authservice.controllers;
 
 import com.root.authservice.clients.EmployeeClientRest;
 import com.root.authservice.dto.in.auth.RegisterUserDto;
+import com.root.authservice.dto.in.auth.SuperiorAttachRequestDTO;
 import com.root.authservice.dto.out.auth.ProfileResponseDTO;
 import com.root.crossdbservice.entities.RoleEntity;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -58,5 +60,12 @@ public class EmployeeServiceController {
         );
 
         return ResponseEntity.status(200).body(filtered);
+    }
+
+    @PostMapping("/attach-superior")
+    public ResponseEntity<Map<String, String>> attachSuperior(@RequestBody @Valid SuperiorAttachRequestDTO dto) {
+        Map<String, String> clientResponse = this.employeeClientRest.attachSuperiorToEmployee(dto);
+
+        return ResponseEntity.status(201).body(clientResponse);
     }
 }

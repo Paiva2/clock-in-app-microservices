@@ -3,20 +3,18 @@ package com.root.employeeservice.services;
 import com.google.common.collect.Sets;
 import com.root.crossdbservice.entities.RoleEntity;
 import com.root.crossdbservice.entities.UserEntity;
+import com.root.crossdbservice.entities.UserManager;
 import com.root.crossdbservice.entities.UserRole;
 import com.root.crossdbservice.repositories.RoleRepository;
+import com.root.crossdbservice.repositories.UserManagerRepository;
 import com.root.crossdbservice.repositories.UserRepository;
 import com.root.crossdbservice.repositories.UserRoleRepository;
-import com.root.employeeservice.exceptions.BadRequestException;
-import com.root.employeeservice.exceptions.ConflictException;
-import com.root.employeeservice.exceptions.ForbiddenException;
-import com.root.employeeservice.exceptions.NotFoundException;
+import com.root.employeeservice.exceptions.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
@@ -24,9 +22,17 @@ public class EmployeeService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
+    private final UserManagerRepository userManagerRepository;
 
-    public EmployeeService(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository) {
+    protected final List<String> rolesWithPermissionToBeSuperior = Arrays.asList(
+            RoleEntity.Role.ADMIN.getRoleValue(),
+            RoleEntity.Role.MANAGER.getRoleValue(),
+            RoleEntity.Role.HUMAN_RESOURCES.getRoleValue()
+    );
+
+    public EmployeeService(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository, UserManagerRepository userManagerRepository) {
         this.userRepository = userRepository;
+        this.userManagerRepository = userManagerRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
         this.userRoleRepository = userRoleRepository;
         this.roleRepository = roleRepository;
@@ -64,9 +70,42 @@ public class EmployeeService {
             throw new BadRequestException("Role can't be empty");
         }
 
-        List<UserEntity> employees = this.userRepository.findAllByRole(role.getRoleValue());
+        List<UserEntity> employees = this.userRepository.findAllByRoleCustom(role.getRoleValue());
 
-        return new ArrayList<>(Sets.newHashSet(employees));
+        return employees;
+    }
+
+    public UserManager attachSuperiorToEmployee(UUID employeeId, UUID superiorId) {
+        if (employeeId == null) {
+            throw new BadRequestException("employeeId can't be empty");
+        }
+
+        if (superiorId == null) {
+            throw new BadRequestException("superiorId can't be empty");
+        }
+
+        UserEntity getEmployee = this.userRepository.findById(employeeId)
+                .orElseThrow(() -> new NotFoundException("Employee not found"));
+
+        UserEntity getSuperior = this.userRepository.findById(superiorId)
+                .orElseThrow(() -> new NotFoundException("Manager not found"));
+
+        getSuperior.getUserRoles()
+                .stream()
+                .filter(role -> {
+                            String roleValue = role.getRole().getRoleName().getRoleValue();
+                            return this.rolesWithPermissionToBeSuperior.contains(roleValue);
+                        }
+                ).findFirst().orElseThrow(() -> new UnauthorizedException("Insufficient permissions"));
+
+
+        UserManager userSuperiorAttach = new UserManager();
+        userSuperiorAttach.setManager(getSuperior);
+        userSuperiorAttach.setUser(getEmployee);
+
+        UserManager performAttachment = this.userManagerRepository.save(userSuperiorAttach);
+
+        return performAttachment;
     }
 
     @Transactional

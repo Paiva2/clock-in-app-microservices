@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
             "(SELECT tb_users.id from tb_users " +
             "INNER JOIN tb_users_roles url ON url.user_id = tb_users.id " +
             "INNER JOIN tb_roles rl ON rl.id = url.role_id " +
-            "WHERE rl.role_name = :role) " +
+            "WHERE rl.role_name = :role AND tb_users.disabled IS NOT TRUE) " +
 
             "SELECT DISTINCT ON(usr.id) * from tb_users usr " +
             "INNER JOIN tb_users_roles url ON url.user_id = usr.id " +

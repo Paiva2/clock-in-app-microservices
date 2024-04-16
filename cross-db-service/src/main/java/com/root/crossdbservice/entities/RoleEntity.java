@@ -1,6 +1,5 @@
 package com.root.crossdbservice.entities;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -28,7 +27,7 @@ public class RoleEntity {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<UserRole> userRoles;
 
     public RoleEntity() {

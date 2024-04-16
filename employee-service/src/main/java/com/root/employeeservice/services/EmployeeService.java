@@ -98,6 +98,14 @@ public class EmployeeService {
                         }
                 ).findFirst().orElseThrow(() -> new UnauthorizedException("Insufficient permissions"));
 
+        Optional<UserManager> doesManagerIsAlreadyAttached = this.userManagerRepository.findByUserAndManager(
+                getEmployee.getId(),
+                getSuperior.getId()
+        );
+
+        if (doesManagerIsAlreadyAttached.isPresent()) {
+            throw new ConflictException("Superior is already attached to this employee");
+        }
 
         UserManager userSuperiorAttach = new UserManager();
         userSuperiorAttach.setManager(getSuperior);

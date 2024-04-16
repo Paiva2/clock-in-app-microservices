@@ -14,12 +14,12 @@ public class UserManager {
     @JoinColumn(name = "id")
     private UserManagerKey userManagerKey = new UserManagerKey();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     @MapsId("user")
     private UserEntity user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "manager_id")
     @MapsId("manager")
     private UserEntity manager;

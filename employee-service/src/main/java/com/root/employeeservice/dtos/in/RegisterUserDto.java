@@ -29,12 +29,15 @@ public class RegisterUserDto {
     @NotBlank(message = "email can't be blank")
     @NotNull(message = "email can't be null")
     private String email;
+    
+    private String position;
 
     public UserEntity toEntity() {
         UserEntity user = new UserEntity();
         user.setEmail(this.email);
         user.setPassword(this.password);
         user.setName(this.username);
+        user.setPosition(this.position);
 
         return user;
     }

@@ -29,6 +29,12 @@ public class UserEntity {
     @Column(name = "position", nullable = true)
     private String position;
 
+    @Column(name = "disabled")
+    private Boolean disabled = false;
+
+    @Column(name = "disabled_at", nullable = true)
+    private Date disabledAt;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;
@@ -56,6 +62,7 @@ public class UserEntity {
             String position,
             Date createdAt,
             Date updatedAt,
+            Date disabledAt,
             Set<UserRole> userRoles,
             Set<UserManager> userManager
     ) {
@@ -68,6 +75,23 @@ public class UserEntity {
         this.updatedAt = updatedAt;
         this.userRoles = userRoles;
         this.userManager = userManager;
+        this.disabledAt = disabledAt;
+    }
+
+    public Boolean getDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(Boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    public Date getDisabledAt() {
+        return disabledAt;
+    }
+
+    public void setDisabledAt(Date disabledAt) {
+        this.disabledAt = disabledAt;
     }
 
     public Set<UserManager> getUserManager() {

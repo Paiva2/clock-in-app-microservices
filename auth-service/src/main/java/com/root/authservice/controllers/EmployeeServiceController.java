@@ -26,6 +26,13 @@ public class EmployeeServiceController {
         return ResponseEntity.status(201).build();
     }
 
+    @PostMapping("/register/manager")
+    public ResponseEntity<Void> registerManager(@RequestBody @Valid RegisterUserDto dto) {
+        this.employeeClientRest.requestRegisterManager(dto);
+
+        return ResponseEntity.status(201).build();
+    }
+
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody @Valid RegisterUserDto dto) {
         this.employeeClientRest.requestRegisterEmployee(dto);

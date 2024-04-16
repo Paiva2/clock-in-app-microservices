@@ -31,6 +31,11 @@ public class EmployeeController {
         this.employeeService.registerBasic(dto.toEntity());
     }
 
+    @PostMapping("/register/manager")
+    public void registerManager(@RequestBody @Valid RegisterUserDto dto) {
+        this.employeeService.registerManager(dto.toEntity());
+    }
+
     @GetMapping("/profile")
     public ProfileResponseDTO profile(@RequestParam(value = "userId") UUID userId) {
         UserEntity user = this.employeeService.requesterProfile(userId);

@@ -70,7 +70,7 @@ public class FilterChainConfig extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
 
-        List<String> openPaths = Arrays.asList("/api/v1/auth/register", "/api/v1/auth/login");
+        List<String> openPaths = Arrays.asList("/api/v1/auth/login");
 
         return openPaths.contains(path);
     }

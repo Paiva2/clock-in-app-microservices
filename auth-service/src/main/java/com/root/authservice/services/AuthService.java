@@ -13,7 +13,6 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -31,6 +30,10 @@ public class AuthService {
 
         UserEntity findUser = this.userRepository.findByEmail(user.getEmail())
                 .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (findUser.getDisabled()) {
+            throw new ForbiddenException("User is disabled");
+        }
 
         boolean doesPasswordsMatches =
                 this.passwordEncoder.matches(user.getPassword(), findUser.getPassword());

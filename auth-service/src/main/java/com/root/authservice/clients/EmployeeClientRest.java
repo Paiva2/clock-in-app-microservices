@@ -22,6 +22,9 @@ public interface EmployeeClientRest {
     @PostMapping(value = "/register/employee")
     void requestRegisterEmployee(RegisterUserDto requestBody);
 
+    @PostMapping(value = "/register/manager")
+    void requestRegisterManager(RegisterUserDto requestBody);
+
     @GetMapping("/profile")
     ProfileResponseDTO requestProfile(@RequestParam("userId") UUID userId);
 }

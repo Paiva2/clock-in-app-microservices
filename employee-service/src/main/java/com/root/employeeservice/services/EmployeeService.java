@@ -8,6 +8,7 @@ import com.root.crossdbservice.repositories.UserRepository;
 import com.root.crossdbservice.repositories.UserRoleRepository;
 import com.root.employeeservice.exceptions.BadRequestException;
 import com.root.employeeservice.exceptions.ConflictException;
+import com.root.employeeservice.exceptions.ForbiddenException;
 import com.root.employeeservice.exceptions.NotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,36 +30,6 @@ public class EmployeeService {
         this.roleRepository = roleRepository;
     }
 
-    @Transactional
-    public void registerBasic(UserEntity newUser) {
-        if (newUser == null) {
-            throw new BadRequestException("newUser can't be null");
-        }
-
-        if (newUser.getPassword().length() < 6) {
-            throw new BadRequestException("password must have at least 6 characters");
-        }
-
-        Optional<UserEntity> doesUserAlreadyExists = this.userRepository.findByEmail(newUser.getEmail());
-
-        if (doesUserAlreadyExists.isPresent()) {
-            throw new ConflictException("E-mail already registered.");
-        }
-
-        newUser.setPassword(this.passwordEncoder.encode(newUser.getPassword()));
-
-        UserEntity user = this.userRepository.save(newUser);
-
-        RoleEntity defaultRole = this.roleRepository.findByRole(RoleEntity.Role.USER)
-                .orElseThrow(() -> new NotFoundException("Role User not found."));
-
-        UserRole userRole = new UserRole();
-        userRole.setRole(defaultRole);
-        userRole.setUser(user);
-
-        this.userRoleRepository.save(userRole);
-    }
-
     public UserEntity requesterProfile(UUID userId) {
         if (userId == null) {
             throw new BadRequestException("userId can't be empty");
@@ -67,31 +38,49 @@ public class EmployeeService {
         UserEntity findUser = this.userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
+        if (findUser.getDisabled()) {
+            throw new ForbiddenException("User is disabled");
+        }
+
         return findUser;
     }
 
     public void registerHumanResource(UserEntity newHr) {
-        if (newHr == null) {
-            throw new BadRequestException("newHr can't be empty");
+        this.registerUser(newHr, RoleEntity.Role.HUMAN_RESOURCES, "Human Resources");
+    }
+
+    public void registerBasic(UserEntity newUser) {
+        this.registerUser(newUser, RoleEntity.Role.USER, newUser.getPosition());
+    }
+
+    public void registerManager(UserEntity newManager) {
+        this.registerUser(newManager, RoleEntity.Role.MANAGER, newManager.getPosition());
+    }
+
+    @Transactional
+    private void registerUser(UserEntity user, RoleEntity.Role role, String position) {
+        if (user == null) {
+            throw new BadRequestException("user can't be empty");
         }
 
-        if (newHr.getPassword().length() < 6) {
+        if (user.getPassword().length() < 6) {
             throw new BadRequestException("Password must have at least 6 characters");
         }
 
-        Optional<UserEntity> doesHrAlreadyExists = this.userRepository.findByEmail(newHr.getEmail());
+        Optional<UserEntity> doesHrAlreadyExists = this.userRepository.findByEmail(user.getEmail());
 
         if (doesHrAlreadyExists.isPresent()) {
             throw new ConflictException("E-mail already being used.");
         }
 
-        newHr.setPassword(this.passwordEncoder.encode(newHr.getPassword()));
-        newHr.setPosition("Human Resources");
+        user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        user.setPosition(position);
+        user.setDisabled(false);
 
-        RoleEntity getHrRole = this.roleRepository.findByRole(RoleEntity.Role.HUMAN_RESOURCES)
-                .orElseThrow(() -> new NotFoundException("Human Resource role not found"));
+        RoleEntity getHrRole = this.roleRepository.findByRole(role)
+                .orElseThrow(() -> new NotFoundException("Provided role not found"));
 
-        UserEntity saveUser = this.userRepository.save(newHr);
+        UserEntity saveUser = this.userRepository.save(user);
 
         UserRole newUserRole = new UserRole();
         newUserRole.setRole(getHrRole);

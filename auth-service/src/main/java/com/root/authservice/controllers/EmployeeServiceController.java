@@ -76,4 +76,10 @@ public class EmployeeServiceController {
         return ResponseEntity.status(201).body(clientResponse);
     }
 
+    @PutMapping("/active/{employeeId}")
+    public ResponseEntity<Map<String, String>> reActiveAnEmployee(@PathVariable("employeeId") UUID employeeId) {
+        Map<String, String> clientResponse = this.employeeClientRest.reActiveEmployee(employeeId);
+
+        return ResponseEntity.status(201).body(clientResponse);
+    }
 }

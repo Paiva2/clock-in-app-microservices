@@ -117,7 +117,7 @@ public class EmployeeService {
         return performAttachment;
     }
 
-    public UserEntity disableEmployee(UUID employeeId) {
+    public UserEntity switchEmployeeStatus(UUID employeeId, boolean willDisable) {
         if (employeeId == null) {
             throw new BadRequestException("superiorId can't be empty");
         }
@@ -125,12 +125,18 @@ public class EmployeeService {
         UserEntity getEmployee = this.userRepository.findById(employeeId)
                 .orElseThrow(() -> new NotFoundException("Employee not found"));
 
-        if (!getEmployee.getDisabled()) {
+        if (willDisable && getEmployee.getDisabled()) {
             throw new ConflictException("Employee is already disabled");
+        } else if (!willDisable && !getEmployee.getDisabled()) {
+            throw new ConflictException("Employee is already active");
         }
 
-        getEmployee.setDisabled(true);
-        getEmployee.setDisabledAt(new Date());
+        return this.handleDisableEmployee(getEmployee, willDisable);
+    }
+
+    private UserEntity handleDisableEmployee(UserEntity getEmployee, boolean willDisable) {
+        getEmployee.setDisabled(willDisable);
+        getEmployee.setDisabledAt(willDisable ? new Date() : null);
 
         UserEntity performDisable = this.userRepository.save(getEmployee);
 

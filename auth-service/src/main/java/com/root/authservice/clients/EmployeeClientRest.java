@@ -8,14 +8,13 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
-import javax.ws.rs.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @FeignClient(
         name = "employee-rest-calls",
-        url = "http://localhost:9001/employee-service/api/v1"
+        url = "http://localhost:9003/api/v1"
 )
 @Component
 public interface EmployeeClientRest {
@@ -33,6 +32,9 @@ public interface EmployeeClientRest {
 
     @DeleteMapping(value = "/disable/{employeeId}")
     Map<String, String> disableEmployee(@PathVariable("employeeId") UUID employeeId);
+
+    @PutMapping(value = "/active/{employeeId}")
+    Map<String, String> reActiveEmployee(@PathVariable("employeeId") UUID employeeId);
 
     @GetMapping("/profile")
     ProfileResponseDTO requestProfile(@RequestParam("userId") UUID userId);

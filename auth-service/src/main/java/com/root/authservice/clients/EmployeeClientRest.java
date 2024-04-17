@@ -3,8 +3,10 @@ package com.root.authservice.clients;
 import com.root.authservice.dto.in.auth.RegisterUserDto;
 import com.root.authservice.dto.in.auth.SuperiorAttachRequestDTO;
 import com.root.authservice.dto.in.auth.UpdateEmployeeProfileDTO;
+import com.root.authservice.dto.out.auth.EmployeeFullListResponseDTO;
 import com.root.authservice.dto.out.auth.ProfileResponseDTO;
 import com.root.authservice.dto.out.auth.ProfileUpdateResponseDTO;
+import com.root.authservice.enums.OrderBy;
 import com.root.crossdbservice.entities.RoleEntity;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
@@ -47,6 +49,17 @@ public interface EmployeeClientRest {
     @GetMapping("/profile")
     ProfileResponseDTO requestProfile(@RequestParam("userId") UUID userId);
 
-    @GetMapping("/list/all")
+    @GetMapping("/list")
     List<ProfileResponseDTO> requestListAllByRoleNotPageable(@RequestParam("role") RoleEntity.Role role);
+
+    @GetMapping("/list-all")
+    EmployeeFullListResponseDTO listAll(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "perPage", defaultValue = "5") int perPage,
+            @RequestParam(value = "order", defaultValue = "desc") OrderBy orderBy,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "position", required = false) String position,
+            @RequestParam(value = "disabled", required = false, defaultValue = "false") boolean disabled
+    );
 }

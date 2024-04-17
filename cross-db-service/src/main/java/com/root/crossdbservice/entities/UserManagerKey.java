@@ -37,17 +37,4 @@ public class UserManagerKey implements Serializable {
     public void setManager(UUID manager) {
         this.manager = manager;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserManagerKey that = (UserManagerKey) o;
-        return Objects.equals(user, that.user) && Objects.equals(manager, that.manager);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(user, manager);
-    }
 }

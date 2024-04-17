@@ -7,7 +7,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -48,7 +47,7 @@ public class UserEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<UserRole> userRoles;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<UserManager> userManager;
 
@@ -77,19 +76,6 @@ public class UserEntity {
         this.userRoles = userRoles;
         this.userManager = userManager;
         this.disabledAt = disabledAt;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserEntity that = (UserEntity) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(password, that.password) && Objects.equals(email, that.email) && Objects.equals(position, that.position) && Objects.equals(disabled, that.disabled) && Objects.equals(disabledAt, that.disabledAt) && Objects.equals(createdAt, that.createdAt) && Objects.equals(updatedAt, that.updatedAt) && Objects.equals(userRoles, that.userRoles) && Objects.equals(userManager, that.userManager);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, password, email, position, disabled, disabledAt, createdAt, updatedAt, userRoles, userManager);
     }
 
     public Boolean getDisabled() {

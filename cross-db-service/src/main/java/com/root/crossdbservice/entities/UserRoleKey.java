@@ -2,7 +2,6 @@ package com.root.crossdbservice.entities;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.UUID;
 
 @Embeddable
@@ -38,18 +37,4 @@ public class UserRoleKey implements Serializable {
     public void setRoleId(UUID roleId) {
         this.roleId = roleId;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserRoleKey userRole = (UserRoleKey) o;
-        return Objects.equals(userId, userRole.userId) && Objects.equals(roleId, userRole.roleId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(userId, roleId);
-    }
-
 }

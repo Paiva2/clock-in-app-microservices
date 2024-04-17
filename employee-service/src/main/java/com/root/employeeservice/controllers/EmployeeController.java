@@ -4,12 +4,14 @@ import com.google.common.collect.Sets;
 import com.root.crossdbservice.entities.RoleEntity;
 import com.root.crossdbservice.entities.UserEntity;
 import com.root.crossdbservice.entities.UserManager;
+import com.root.crossdbservice.entities.UserRole;
 import com.root.employeeservice.dtos.in.RegisterUserDto;
 import com.root.employeeservice.dtos.in.SuperiorAttachRequestDTO;
 import com.root.employeeservice.dtos.in.UpdateEmployeeProfileDTO;
-import com.root.employeeservice.dtos.out.ProfileResponseDTO;
-import com.root.employeeservice.dtos.out.ProfileUpdateResponseDTO;
+import com.root.employeeservice.dtos.out.*;
+import com.root.employeeservice.enums.OrderBy;
 import com.root.employeeservice.services.EmployeeService;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -41,7 +43,7 @@ public class EmployeeController {
         this.employeeService.registerManager(dto.toEntity());
     }
 
-    @GetMapping("/list/all")
+    @GetMapping("/list")
     public List<ProfileResponseDTO> listAllUsersByRoleNotPageable(@RequestParam("role") RoleEntity.Role role) {
         List<UserEntity> usersFiltered = this.employeeService.listEmployeesByRoleUnpaginable(
                 role
@@ -61,6 +63,51 @@ public class EmployeeController {
         ).collect(Collectors.toList());
 
         return profiles;
+    }
+
+    @GetMapping("/list-all")
+    public EmployeeFullListResponseDTO listAllUsers(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "perPage", defaultValue = "5") int perPage,
+            @RequestParam(value = "order", defaultValue = "desc") OrderBy orderBy,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "position", required = false) String position,
+            @RequestParam(value = "disabled", required = false, defaultValue = "false") boolean disabled
+    ) {
+        Page<UserEntity> listOfUsers = this.employeeService.listAllEmployees(
+                page,
+                perPage,
+                orderBy,
+                name,
+                email,
+                position,
+                disabled
+        );
+
+        List<EmployeeResponseDTO> employeeResponseDtos = listOfUsers.stream().map(user ->
+                new EmployeeResponseDTO(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getPosition(),
+                        this.userRolesResponseDto(user.getUserRoles()),
+                        user.getUserManager().stream().map(userManager ->
+                                this.managerResponseDto(userManager.getManager())
+                        ).collect(Collectors.toList()),
+                        user.getDisabled(),
+                        user.getDisabledAt()
+                )
+        ).collect(Collectors.toList());
+
+        EmployeeFullListResponseDTO employeeFullListResponseDto = new EmployeeFullListResponseDTO(
+                listOfUsers.getNumber() + 1,
+                listOfUsers.getSize(),
+                listOfUsers.getTotalElements(),
+                employeeResponseDtos
+        );
+
+        return employeeFullListResponseDto;
     }
 
     @GetMapping("/profile")
@@ -144,5 +191,20 @@ public class EmployeeController {
         );
 
         return profileUpdateResponseDto;
+    }
+
+    private ManagerResponseDTO managerResponseDto(UserEntity manager) {
+        return new ManagerResponseDTO(
+                manager.getId(),
+                manager.getName(),
+                manager.getEmail(),
+                manager.getPosition()
+        );
+    }
+
+    private Set<String> userRolesResponseDto(Set<UserRole> userRoles) {
+        return userRoles.stream().map(role ->
+                role.getRole().getRoleName().getRoleValue()
+        ).collect(Collectors.toSet());
     }
 }

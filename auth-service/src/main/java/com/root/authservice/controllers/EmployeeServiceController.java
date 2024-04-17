@@ -4,8 +4,10 @@ import com.root.authservice.clients.EmployeeClientRest;
 import com.root.authservice.dto.in.auth.RegisterUserDto;
 import com.root.authservice.dto.in.auth.SuperiorAttachRequestDTO;
 import com.root.authservice.dto.in.auth.UpdateEmployeeProfileDTO;
+import com.root.authservice.dto.out.auth.EmployeeFullListResponseDTO;
 import com.root.authservice.dto.out.auth.ProfileResponseDTO;
 import com.root.authservice.dto.out.auth.ProfileUpdateResponseDTO;
+import com.root.authservice.enums.OrderBy;
 import com.root.crossdbservice.entities.RoleEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -62,6 +64,29 @@ public class EmployeeServiceController {
         );
 
         return ResponseEntity.status(200).body(filtered);
+    }
+
+    @GetMapping("/list-all")
+    public ResponseEntity<EmployeeFullListResponseDTO> listAllEmployees(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "perPage", defaultValue = "5") int perPage,
+            @RequestParam(value = "order", defaultValue = "desc") String orderBy,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "position", required = false) String position,
+            @RequestParam(value = "disabled", required = false, defaultValue = "false") boolean disabled
+    ) {
+        EmployeeFullListResponseDTO clientResponse = this.employeeClientRest.listAll(
+                page,
+                perPage,
+                OrderBy.valueOf(orderBy.toUpperCase()),
+                email,
+                name,
+                position,
+                disabled
+        );
+
+        return ResponseEntity.status(200).body(clientResponse);
     }
 
     @PostMapping("/attach-superior")

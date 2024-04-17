@@ -83,17 +83,4 @@ public class UserManager {
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserManager that = (UserManager) o;
-        return Objects.equals(userManagerKey, that.userManagerKey) && Objects.equals(user, that.user) && Objects.equals(manager, that.manager) && Objects.equals(createdAt, that.createdAt) && Objects.equals(updatedAt, that.updatedAt);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(userManagerKey, user, manager, createdAt, updatedAt);
-    }
 }

@@ -8,13 +8,20 @@ import com.root.crossdbservice.repositories.RoleRepository;
 import com.root.crossdbservice.repositories.UserManagerRepository;
 import com.root.crossdbservice.repositories.UserRepository;
 import com.root.crossdbservice.repositories.UserRoleRepository;
+import com.root.employeeservice.enums.OrderBy;
 import com.root.employeeservice.exceptions.*;
+import com.root.employeeservice.specifications.EmployeeSpecification;
 import com.root.employeeservice.strategy.concrete.ClonePropertiesBeanUtilsStrategy;
 import com.root.employeeservice.strategy.concrete.EncryptBcryptStrategy;
 import com.root.employeeservice.strategy.concrete.MailValidatorRegexStrategy;
 import com.root.employeeservice.strategy.context.Cloner;
 import com.root.employeeservice.strategy.context.Encryptor;
 import com.root.employeeservice.strategy.context.MailValidator;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -22,31 +29,33 @@ import java.util.*;
 
 @Service
 public class EmployeeService {
-    private final UserRepository userRepository;
-    private final UserRoleRepository userRoleRepository;
-    private final RoleRepository roleRepository;
-    private final UserManagerRepository userManagerRepository;
-
-    private final Cloner cloneProperties;
-    private final Encryptor passwordEncoder;
-    private final MailValidator mailValidator;
-
     protected final List<String> rolesWithPermissionToBeSuperior = Arrays.asList(
             RoleEntity.Role.ADMIN.getRoleValue(),
             RoleEntity.Role.MANAGER.getRoleValue(),
             RoleEntity.Role.HUMAN_RESOURCES.getRoleValue()
     );
 
+    private final UserRepository userRepository;
+    private final UserRoleRepository userRoleRepository;
+    private final RoleRepository roleRepository;
+    private final UserManagerRepository userManagerRepository;
+    private final EmployeeSpecification employeeSpecification;
+
+    private final Cloner cloneProperties;
+    private final Encryptor passwordEncoder;
+    private final MailValidator mailValidator;
+
     public EmployeeService(
             UserRepository userRepository,
             UserRoleRepository userRoleRepository,
             RoleRepository roleRepository,
-            UserManagerRepository userManagerRepository
+            UserManagerRepository userManagerRepository, EmployeeSpecification employeeSpecification
     ) {
         this.userRepository = userRepository;
         this.userManagerRepository = userManagerRepository;
         this.userRoleRepository = userRoleRepository;
         this.roleRepository = roleRepository;
+        this.employeeSpecification = employeeSpecification;
         this.cloneProperties = new Cloner(new ClonePropertiesBeanUtilsStrategy());
         this.passwordEncoder = new Encryptor(new EncryptBcryptStrategy());
         this.mailValidator = new MailValidator(new MailValidatorRegexStrategy());
@@ -87,6 +96,43 @@ public class EmployeeService {
         List<UserEntity> employees = this.userRepository.findAllByRoleCustom(role.getRoleValue());
 
         return employees;
+    }
+
+    public Page<UserEntity> listAllEmployees(
+            int page,
+            int perPage,
+            OrderBy orderBy,
+            String name,
+            String email,
+            String position,
+            boolean disabled
+    ) {
+        if (page < 1) {
+            page = 1;
+        }
+
+        if (perPage < 5) {
+            perPage = 5;
+        } else if (perPage > 50) {
+            perPage = 50;
+        }
+
+        Pageable pageable = PageRequest.of(
+                page - 1,
+                perPage,
+                Sort.Direction.fromString(orderBy.name()),
+                "createdAt"
+        );
+
+        Specification<UserEntity> querySpecification = Specification.where(
+                        name != null ? this.employeeSpecification.nameLike(name) : null
+                ).or(email != null ? this.employeeSpecification.emailLike(email) : null)
+                .or(position != null ? this.employeeSpecification.positionLike(position) : null)
+                .and(this.employeeSpecification.isDisabled(disabled));
+
+        Page<UserEntity> listFiltered = this.userRepository.findAll(querySpecification, pageable);
+
+        return listFiltered;
     }
 
     public UserManager attachSuperiorToEmployee(UUID employeeId, UUID superiorId) {

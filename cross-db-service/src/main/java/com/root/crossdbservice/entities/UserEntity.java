@@ -7,6 +7,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -53,31 +54,34 @@ public class UserEntity {
     @Fetch(FetchMode.JOIN)
     private Set<UserManager> userManager;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Fetch(FetchMode.JOIN)
+    private List<TimeRecord> timeRecords;
+
     public UserEntity() {
     }
 
-    public UserEntity(
-            UUID id,
-            String name,
-            String password,
-            String email,
-            String position,
-            Date createdAt,
-            Date updatedAt,
-            Date disabledAt,
-            Set<UserRole> userRoles,
-            Set<UserManager> userManager
-    ) {
+    public UserEntity(UUID id, String name, String password, String email, String position, Boolean disabled, Date disabledAt, Date createdAt, Date updatedAt, Set<UserRole> userRoles, Set<UserManager> userManager, List<TimeRecord> timeRecords) {
         this.id = id;
         this.name = name;
         this.password = password;
         this.email = email;
         this.position = position;
+        this.disabled = disabled;
+        this.disabledAt = disabledAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.userRoles = userRoles;
         this.userManager = userManager;
-        this.disabledAt = disabledAt;
+        this.timeRecords = timeRecords;
+    }
+
+    public List<TimeRecord> getTimeRecords() {
+        return timeRecords;
+    }
+
+    public void setTimeRecords(List<TimeRecord> timeRecords) {
+        this.timeRecords = timeRecords;
     }
 
     public Boolean getDisabled() {

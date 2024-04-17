@@ -15,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.ws.rs.QueryParam;
 import java.util.*;
 import java.util.stream.Collectors;
 

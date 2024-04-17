@@ -17,9 +17,15 @@ public class TimeRecord {
     private UUID id;
 
     @CreationTimestamp
+    @Column(name = "record_hour", updatable = true, nullable = false)
+    private Date recordHour;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private Date createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Date updatedAt;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -30,11 +36,20 @@ public class TimeRecord {
     public TimeRecord() {
     }
 
-    public TimeRecord(UUID id, Date createdAt, Date updatedAt, UserEntity user) {
+    public TimeRecord(UUID id, Date recordHour, Date createdAt, Date updatedAt, UserEntity user) {
         this.id = id;
+        this.recordHour = recordHour;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.user = user;
+    }
+
+    public Date getRecordHour() {
+        return recordHour;
+    }
+
+    public void setRecordHour(Date recordHour) {
+        this.recordHour = recordHour;
     }
 
     public void setId(UUID id) {

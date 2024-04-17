@@ -1,18 +1,15 @@
-package com.root.employeeservice.utils;
+package com.root.employeeservice.strategy.concrete;
 
+import com.root.employeeservice.strategy.CloneClassStrategy;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
 
-@Component
-public class CloneProperties {
-    public CloneProperties() {
-    }
-
-    public void copyNonNullProperties(Object source, Object target) {
+public class ClonePropertiesBeanUtilsStrategy implements CloneClassStrategy {
+    @Override
+    public void cloneNonNullProps(Object source, Object target) {
         if (!source.getClass().equals(target.getClass())) {
             throw new IllegalArgumentException("Classes must be equals to be cloned");
         }

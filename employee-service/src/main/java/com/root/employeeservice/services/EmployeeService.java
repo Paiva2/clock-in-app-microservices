@@ -1,6 +1,5 @@
 package com.root.employeeservice.services;
 
-
 import com.root.crossdbservice.entities.RoleEntity;
 import com.root.crossdbservice.entities.UserEntity;
 import com.root.crossdbservice.entities.UserManager;
@@ -10,26 +9,27 @@ import com.root.crossdbservice.repositories.UserManagerRepository;
 import com.root.crossdbservice.repositories.UserRepository;
 import com.root.crossdbservice.repositories.UserRoleRepository;
 import com.root.employeeservice.exceptions.*;
-import com.root.employeeservice.utils.CloneProperties;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import com.root.employeeservice.strategy.concrete.ClonePropertiesBeanUtilsStrategy;
+import com.root.employeeservice.strategy.concrete.EncryptBcryptStrategy;
+import com.root.employeeservice.strategy.concrete.MailValidatorRegexStrategy;
+import com.root.employeeservice.strategy.context.Cloner;
+import com.root.employeeservice.strategy.context.Encryptor;
+import com.root.employeeservice.strategy.context.MailValidator;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class EmployeeService {
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
     private final UserManagerRepository userManagerRepository;
-    private final CloneProperties cloneProperties;
 
-    private final Pattern VALID_EMAIL_ADDRESS_REGEX =
-            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+    private final Cloner cloneProperties;
+    private final Encryptor passwordEncoder;
+    private final MailValidator mailValidator;
 
     protected final List<String> rolesWithPermissionToBeSuperior = Arrays.asList(
             RoleEntity.Role.ADMIN.getRoleValue(),
@@ -41,15 +41,15 @@ public class EmployeeService {
             UserRepository userRepository,
             UserRoleRepository userRoleRepository,
             RoleRepository roleRepository,
-            UserManagerRepository userManagerRepository,
-            CloneProperties cloneProperties
+            UserManagerRepository userManagerRepository
     ) {
         this.userRepository = userRepository;
         this.userManagerRepository = userManagerRepository;
-        this.cloneProperties = cloneProperties;
         this.userRoleRepository = userRoleRepository;
         this.roleRepository = roleRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.cloneProperties = new Cloner(new ClonePropertiesBeanUtilsStrategy());
+        this.passwordEncoder = new Encryptor(new EncryptBcryptStrategy());
+        this.mailValidator = new MailValidator(new MailValidatorRegexStrategy());
     }
 
     public UserEntity requesterProfile(UUID userId) {
@@ -186,11 +186,11 @@ public class EmployeeService {
                 throw new BadRequestException("Password must have at least 6 characters");
             }
 
-            employeeUpdated.setPassword(this.passwordEncoder.encode(employeeUpdated.getPassword()));
+            employeeUpdated.setPassword(this.passwordEncoder.encrypt(employeeUpdated.getPassword()));
         }
 
         if (employeeUpdated.getEmail() != null) {
-            if (!this.isEmailValid(getEmployee.getEmail())) {
+            if (!this.mailValidator.validate(employeeUpdated.getEmail())) {
                 throw new BadRequestException("Invalid e-mail");
             }
 
@@ -201,14 +201,9 @@ public class EmployeeService {
             }
         }
 
-        this.cloneProperties.copyNonNullProperties(employeeUpdated, getEmployee);
+        this.cloneProperties.cloneNonNullProps(employeeUpdated, getEmployee);
 
         return this.userRepository.save(getEmployee);
-    }
-
-    private boolean isEmailValid(String emailStr) {
-        Matcher matcher = this.VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
-        return matcher.matches();
     }
 
     protected void checkPermissionsToUpdateEmployee(UUID updateRequesterId) {
@@ -241,7 +236,7 @@ public class EmployeeService {
             throw new ConflictException("E-mail already being used.");
         }
 
-        user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        user.setPassword(this.passwordEncoder.encrypt(user.getPassword()));
         user.setPosition(position);
         user.setDisabled(false);
 

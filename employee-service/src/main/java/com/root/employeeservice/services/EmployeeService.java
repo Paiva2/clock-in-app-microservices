@@ -176,9 +176,17 @@ public class EmployeeService {
         return performAttachment;
     }
 
-    public UserEntity switchEmployeeStatus(UUID employeeId, boolean willDisable) {
+    public UserEntity switchEmployeeStatus(UUID requesterId, UUID employeeId, boolean willDisable) {
         if (employeeId == null) {
-            throw new BadRequestException("superiorId can't be empty");
+            throw new BadRequestException("employeeId can't be empty");
+        }
+
+        if (requesterId == null) {
+            throw new BadRequestException("requesterId can't be empty");
+        }
+
+        if (requesterId.equals(employeeId)) {
+            throw new BadRequestException("Only employees superiors can disable accounts");
         }
 
         UserEntity getEmployee = this.userRepository.findById(employeeId)
@@ -188,6 +196,18 @@ public class EmployeeService {
             throw new ConflictException("Employee is already disabled");
         } else if (!willDisable && !getEmployee.getDisabled()) {
             throw new ConflictException("Employee is already active");
+        }
+
+        Optional<UserManager> employeeManagerCheck = this.userManagerRepository.findByUserAndManager(
+                getEmployee.getId(),
+                requesterId
+        );
+
+        if (!employeeManagerCheck.isPresent()) {
+            UserEntity getRequester = this.userRepository.findById(requesterId)
+                    .orElseThrow(() -> new NotFoundException("Requester not found"));
+
+            this.permissionsToHandleEmployeeAccount(getRequester);
         }
 
         return this.handleDisableEmployee(getEmployee, willDisable);
@@ -223,7 +243,10 @@ public class EmployeeService {
             );
 
             if (!doesRequesterIsEmployeeManager.isPresent()) {
-                this.checkPermissionsToUpdateEmployee(requesterId);
+                UserEntity getRequester = this.userRepository.findById(requesterId)
+                        .orElseThrow(() -> new NotFoundException("Requester not found"));
+
+                this.permissionsToHandleEmployeeAccount(getRequester);
             }
         }
 
@@ -252,11 +275,8 @@ public class EmployeeService {
         return this.userRepository.save(getEmployee);
     }
 
-    protected void checkPermissionsToUpdateEmployee(UUID updateRequesterId) {
-        UserEntity getRequester = this.userRepository.findById(updateRequesterId)
-                .orElseThrow(() -> new NotFoundException("Requester not found"));
-
-        getRequester.getUserRoles().stream().filter(role -> {
+    protected void permissionsToHandleEmployeeAccount(UserEntity requester) {
+        requester.getUserRoles().stream().filter(role -> {
             String getRole = role.getRole().getRoleName().getRoleValue();
 
             return getRole.equals(RoleEntity.Role.ADMIN.getRoleValue()) ||

@@ -97,15 +97,23 @@ public class EmployeeServiceController {
     }
 
     @DeleteMapping("/disable/{employeeId}")
-    public ResponseEntity<Map<String, String>> disableAnEmployee(@PathVariable("employeeId") UUID employeeId) {
-        Map<String, String> clientResponse = this.employeeClientRest.disableEmployee(employeeId);
+    public ResponseEntity<Map<String, String>> disableAnEmployee(
+            @PathVariable("employeeId") UUID employeeId,
+            Authentication authentication
+    ) {
+        UUID requesterId = UUID.fromString(authentication.getName());
+        Map<String, String> clientResponse = this.employeeClientRest.disableEmployee(employeeId, requesterId);
 
         return ResponseEntity.status(201).body(clientResponse);
     }
 
     @PutMapping("/active/{employeeId}")
-    public ResponseEntity<Map<String, String>> reActiveAnEmployee(@PathVariable("employeeId") UUID employeeId) {
-        Map<String, String> clientResponse = this.employeeClientRest.reActiveEmployee(employeeId);
+    public ResponseEntity<Map<String, String>> reActiveAnEmployee(
+            @PathVariable("employeeId") UUID employeeId,
+            Authentication authentication
+    ) {
+        UUID requesterId = UUID.fromString(authentication.getName());
+        Map<String, String> clientResponse = this.employeeClientRest.reActiveEmployee(employeeId, requesterId);
 
         return ResponseEntity.status(201).body(clientResponse);
     }

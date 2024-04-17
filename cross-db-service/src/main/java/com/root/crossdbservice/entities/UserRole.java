@@ -1,6 +1,8 @@
 package com.root.crossdbservice.entities;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
@@ -13,7 +15,7 @@ public class UserRole {
     @JoinColumn(name = "id")
     private UserRoleKey id = new UserRoleKey();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userId")
     @JoinColumn(name = "user_id")
     private UserEntity user;
@@ -21,6 +23,7 @@ public class UserRole {
     @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("roleId")
     @JoinColumn(name = "role_id")
+    @Fetch(FetchMode.JOIN)
     private RoleEntity role;
 
     @CreationTimestamp

@@ -35,10 +35,16 @@ public interface EmployeeClientRest {
     Map<String, String> attachSuperiorToEmployee(@RequestBody SuperiorAttachRequestDTO requestBody);
 
     @DeleteMapping(value = "/disable/{employeeId}")
-    Map<String, String> disableEmployee(@PathVariable("employeeId") UUID employeeId);
+    Map<String, String> disableEmployee(
+            @PathVariable("employeeId") UUID employeeId,
+            @RequestParam("requesterId") UUID requesterId
+    );
 
     @PutMapping(value = "/active/{employeeId}")
-    Map<String, String> reActiveEmployee(@PathVariable("employeeId") UUID employeeId);
+    Map<String, String> reActiveEmployee(
+            @PathVariable("employeeId") UUID employeeId,
+            @RequestParam("requesterId") UUID requesterId
+    );
 
     @PutMapping("/update/{employeeId}")
     ProfileUpdateResponseDTO updateEmployeeProfile(

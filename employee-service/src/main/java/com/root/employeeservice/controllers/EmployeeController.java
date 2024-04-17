@@ -146,9 +146,10 @@ public class EmployeeController {
 
     @DeleteMapping("/disable/{employeeId}")
     public Map<String, String> disableActiveEmployee(
-            @PathVariable(name = "employeeId") UUID employeeId
+            @PathVariable(name = "employeeId") UUID employeeId,
+            @RequestParam("requesterId") UUID requesterId
     ) {
-        UserEntity employeeDisabled = this.employeeService.switchEmployeeStatus(employeeId, true);
+        UserEntity employeeDisabled = this.employeeService.switchEmployeeStatus(requesterId, employeeId, true);
 
         Map<String, String> responseBody = new LinkedHashMap<String, String>() {{
             put("message", "Employee disabled successfully.");
@@ -160,9 +161,10 @@ public class EmployeeController {
 
     @PutMapping("/active/{employeeId}")
     public Map<String, String> reActiveEmployee(
-            @PathVariable(name = "employeeId") UUID employeeId
+            @PathVariable(name = "employeeId") UUID employeeId,
+            @RequestParam("requesterId") UUID requesterId
     ) {
-        UserEntity employeeActivated = this.employeeService.switchEmployeeStatus(employeeId, false);
+        UserEntity employeeActivated = this.employeeService.switchEmployeeStatus(requesterId, employeeId, false);
 
         Map<String, String> responseBody = new LinkedHashMap<String, String>() {{
             put("message", "Employee activated successfully.");

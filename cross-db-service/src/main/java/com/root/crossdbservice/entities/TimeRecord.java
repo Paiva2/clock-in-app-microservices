@@ -15,8 +15,7 @@ public class TimeRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-
-    @CreationTimestamp
+    
     @Column(name = "record_hour", updatable = true, nullable = false)
     private Date recordHour;
 
@@ -33,15 +32,28 @@ public class TimeRecord {
     @Fetch(FetchMode.JOIN)
     private UserEntity user;
 
+    @OneToOne(mappedBy = "timeRecord", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private PendingTimeRecordAction pendingTimeRecordAction;
+
     public TimeRecord() {
     }
 
-    public TimeRecord(UUID id, Date recordHour, Date createdAt, Date updatedAt, UserEntity user) {
+    public TimeRecord(UUID id, Date recordHour, Date createdAt, Date updatedAt, UserEntity user, PendingTimeRecordAction pendingTimeRecordAction) {
         this.id = id;
         this.recordHour = recordHour;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.user = user;
+        this.pendingTimeRecordAction = pendingTimeRecordAction;
+    }
+
+    public PendingTimeRecordAction getPendingTimeRecordAction() {
+        return pendingTimeRecordAction;
+    }
+
+    public void setPendingTimeRecordAction(PendingTimeRecordAction pendingTimeRecordAction) {
+        this.pendingTimeRecordAction = pendingTimeRecordAction;
     }
 
     public Date getRecordHour() {

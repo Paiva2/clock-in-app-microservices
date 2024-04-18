@@ -10,7 +10,6 @@ import com.root.employeeservice.services.TimeRecordService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.text.ParseException;
 import java.util.UUID;
 
 @RestController

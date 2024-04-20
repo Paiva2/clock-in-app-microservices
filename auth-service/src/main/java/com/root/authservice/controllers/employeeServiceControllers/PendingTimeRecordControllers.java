@@ -3,6 +3,7 @@ package com.root.authservice.controllers.employeeServiceControllers;
 import com.root.authservice.clients.employee_service_clients.PendingTimeRecordClient;
 import com.root.authservice.dto.out.auth.PendingTimeRecordUpdateListResponseDTO;
 import com.root.authservice.enums.OrderBy;
+import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,6 +27,7 @@ public class PendingTimeRecordControllers {
     @GetMapping("/list-update-pending")
     public ResponseEntity<PendingTimeRecordUpdateListResponseDTO> listPendingToUpdate(
             Authentication authentication,
+            @RequestParam(value = "action", required = true, defaultValue = "UPDATE") PendingTimeRecordAction.ActionType actionType,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "size", required = false, defaultValue = "5") int perPage,
             @RequestParam(value = "employeeName", required = false) String employeeName,
@@ -37,6 +39,7 @@ public class PendingTimeRecordControllers {
 
         PendingTimeRecordUpdateListResponseDTO clientResponse =
                 this.pendingTimeRecordClient.listAllPendingToUpdate(
+                        actionType,
                         managerId,
                         page,
                         perPage,

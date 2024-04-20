@@ -56,17 +56,77 @@ public class PendingTimeRecordActionService {
             perPage = 50;
         }
 
+        return this.listAll(managerId,
+                page,
+                perPage,
+                employeeName,
+                minDate,
+                maxDate,
+                orderBy,
+                PendingTimeRecordAction.ActionType.UPDATE
+        );
+    }
+
+    public Page<PendingTimeRecordAction> listPendingToDelete(
+            UUID managerId,
+            int page,
+            int perPage,
+            String employeeName,
+            Date minDate,
+            Date maxDate,
+            OrderBy orderBy
+    ) {
+        if (managerId == null) {
+            throw new BadRequestException("managerId can't be null");
+        }
+
+        if (page < 1) {
+            page = 1;
+        }
+
+        if (perPage < 5) {
+            perPage = 5;
+        } else if (perPage > 50) {
+            perPage = 50;
+        }
+
+        return this.listAll(managerId,
+                page,
+                perPage,
+                employeeName,
+                minDate,
+                maxDate,
+                orderBy,
+                PendingTimeRecordAction.ActionType.DELETE
+        );
+    }
+
+    private Page<PendingTimeRecordAction> listAll(
+            UUID managerId,
+            int page,
+            int perPage,
+            String employeeName,
+            Date minDate,
+            Date maxDate,
+            OrderBy orderBy,
+            PendingTimeRecordAction.ActionType actionType
+    ) {
         UserEntity getManager = this.userRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         PageRequest pageable =
-                PageRequest.of(page - 1, perPage, Sort.Direction.valueOf(orderBy.getOrderByValue().toUpperCase()), "createdAt");
+                PageRequest.of(
+                        page - 1,
+                        perPage,
+                        Sort.Direction.valueOf(orderBy.getOrderByValue().toUpperCase()),
+                        "createdAt"
+                );
 
         PendingTimeRecordActionSpecification timeRecordSpec = this.pendingTimeRecordActionSpecification;
 
         Specification<PendingTimeRecordAction> specification
                 = Specification.where(timeRecordSpec.managerEq(getManager.getId())
-                        .and(timeRecordSpec.actionEqual(PendingTimeRecordAction.ActionType.UPDATE))
+                        .and(timeRecordSpec.actionEqual(actionType))
                         .and(timeRecordSpec.actionDone(false))
                 )
                 .and(employeeName != null ? timeRecordSpec.employeeNameLike(employeeName) : null)

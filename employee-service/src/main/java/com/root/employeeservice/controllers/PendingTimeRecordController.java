@@ -26,8 +26,9 @@ public class PendingTimeRecordController {
         this.pendingTimeRecordActionService = pendingTimeRecordActionService;
     }
 
-    @GetMapping("/update")
+    @GetMapping("/list")
     public PendingTimeRecordUpdateListResponseDTO listAllPendingToUpdate(
+            @RequestParam(value = "action", required = true, defaultValue = "UPDATE") PendingTimeRecordAction.ActionType actionType,
             @RequestParam(value = "managerId", required = true) UUID managerId,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "size", required = false, defaultValue = "5") int perPage,
@@ -36,15 +37,29 @@ public class PendingTimeRecordController {
             @RequestParam(value = "maxDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date maxDate,
             @RequestParam(value = "order", required = false, defaultValue = "ASC") OrderBy orderBy
     ) {
-        Page<PendingTimeRecordAction> list = this.pendingTimeRecordActionService.listPendingToUpdate(
-                managerId,
-                page,
-                perPage,
-                employeeName,
-                minDate,
-                maxDate,
-                orderBy
-        );
+        Page<PendingTimeRecordAction> list = null;
+
+        if (actionType.equals(PendingTimeRecordAction.ActionType.UPDATE)) {
+            list = this.pendingTimeRecordActionService.listPendingToUpdate(
+                    managerId,
+                    page,
+                    perPage,
+                    employeeName,
+                    minDate,
+                    maxDate,
+                    orderBy
+            );
+        } else if (actionType.equals(PendingTimeRecordAction.ActionType.DELETE)) {
+            list = this.pendingTimeRecordActionService.listPendingToDelete(
+                    managerId,
+                    page,
+                    perPage,
+                    employeeName,
+                    minDate,
+                    maxDate,
+                    orderBy
+            );
+        }
 
         PendingTimeRecordUpdateListResponseDTO pendingTimeRecordUpdateListResponseDTO =
                 new PendingTimeRecordUpdateListResponseDTO(

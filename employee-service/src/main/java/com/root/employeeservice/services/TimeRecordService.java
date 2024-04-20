@@ -118,6 +118,35 @@ public class TimeRecordService {
         return this.pendingTimeRecordActionRepository.save(newAction);
     }
 
+    public PendingTimeRecordAction requestTimeRecordDelete(UUID requesterId, TimeRecord timeRecordToDelete) {
+        if (requesterId == null) {
+            throw new BadRequestException("requesterId can't be empty");
+        }
+
+        if (timeRecordToDelete == null) {
+            throw new BadRequestException("Time record can't be empty");
+        }
+
+        TimeRecord getTimeRecord = this.timeRecordRepository.findByIdAndEmployee(
+                timeRecordToDelete.getId(),
+                requesterId
+        ).orElseThrow(() -> new NotFoundException("Time Record not found"));
+
+        Optional<PendingTimeRecordAction> timeRecordAlreadyHasPendingAction =
+                this.pendingTimeRecordActionRepository.findByTimeRecord(getTimeRecord);
+
+        if (timeRecordAlreadyHasPendingAction.isPresent()) {
+            throw new ConflictException("Time record already has a pending action");
+        }
+
+        PendingTimeRecordAction newAction = new PendingTimeRecordAction();
+        newAction.setTimeRecord(getTimeRecord);
+        newAction.setActionType(PendingTimeRecordAction.ActionType.DELETE);
+        newAction.setTimeUpdated(null);
+
+        return this.pendingTimeRecordActionRepository.save(newAction);
+    }
+
     private int getDayOfTimeRecord(TimeRecord timeRecord) {
         return this.convertToLocalDate(timeRecord.getRecordHour()).getDayOfMonth();
     }

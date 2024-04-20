@@ -37,13 +37,21 @@ public class TimeRecordController {
         return timeRecordResponseDTO;
     }
 
-    @PostMapping("/request-update")
+    @PostMapping("/request-action")
     public PendingTimeRecordResponseDTO requestUpdate(
+            @RequestParam(name = "action", required = true) PendingTimeRecordAction.ActionType actionType,
             @RequestParam("employeeId") UUID employeeId,
             @RequestBody @Valid NewPendingUpdateTimeRecordDTO dto
     ) {
-        PendingTimeRecordAction requestUpdate =
-                this.timeRecordService.requestTimeRecordUpdate(employeeId, dto.toEntity());
+        PendingTimeRecordAction requestUpdate = null;
+
+        if (actionType.equals(PendingTimeRecordAction.ActionType.UPDATE)) {
+            requestUpdate =
+                    this.timeRecordService.requestTimeRecordUpdate(employeeId, dto.toEntity());
+        } else if (actionType.equals(PendingTimeRecordAction.ActionType.DELETE)) {
+            requestUpdate =
+                    this.timeRecordService.requestTimeRecordDelete(employeeId, dto.toEntity());
+        }
 
         PendingTimeRecordResponseDTO pendingTimeRecordResponseDTO = new PendingTimeRecordResponseDTO(
                 requestUpdate.getId(),

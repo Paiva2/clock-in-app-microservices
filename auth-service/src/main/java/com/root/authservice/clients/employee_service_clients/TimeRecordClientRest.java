@@ -3,6 +3,7 @@ package com.root.authservice.clients.employee_service_clients;
 import com.root.authservice.dto.in.auth.NewPendingUpdateTimeRecord;
 import com.root.authservice.dto.out.auth.PendingTimeRecordResponseDTO;
 import com.root.authservice.dto.out.auth.TimeRecordResponseDTO;
+import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +22,9 @@ public interface TimeRecordClientRest {
     @PostMapping("/register")
     TimeRecordResponseDTO registerTimeRecord(@RequestParam("employeeId") UUID employeeId);
 
-    @PostMapping("/request-update")
+    @PostMapping("/request-action")
     PendingTimeRecordResponseDTO requestUpdate(
+            @RequestParam(name = "action", required = true) PendingTimeRecordAction.ActionType actionType,
             @RequestParam("employeeId") UUID employeeId,
             @RequestBody @Valid NewPendingUpdateTimeRecord dto
     );

@@ -22,7 +22,6 @@ public class NewPendingUpdateTimeRecordDTO {
     @NotEmpty(message = "id can't be empty")
     private String id;
 
-    @NotNull(message = "recordHour can't be null")
     private Date recordHour;
 
     public TimeRecord toEntity() {

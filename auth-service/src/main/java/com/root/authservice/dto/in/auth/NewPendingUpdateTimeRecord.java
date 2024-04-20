@@ -25,8 +25,5 @@ public class NewPendingUpdateTimeRecord {
             regexp = "^\\d{4}-(?:0[1-9]|1[0-2])-(?:[0-2][1-9]|[1-3]0|3[01])T(?:[0-1][0-9]|2[0-3])(?::[0-6]\\d)(?::[0-6]\\d)?(?:\\.\\d{3})?(?:[+-][0-2]\\d:[0-5]\\d|Z)?$",
             message = "recordHour must be an ISO-8601 date format"
     )
-    @NotEmpty(message = "recordHour can't be empty")
-    @NotNull(message = "recordHour can't be null")
-    @NotBlank(message = "recordHour can't be blank")
     private String recordHour;
 }

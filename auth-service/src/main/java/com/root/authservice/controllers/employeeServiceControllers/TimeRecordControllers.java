@@ -5,12 +5,11 @@ import com.root.authservice.clients.employee_service_clients.TimeRecordClientRes
 import com.root.authservice.dto.in.auth.NewPendingUpdateTimeRecord;
 import com.root.authservice.dto.out.auth.PendingTimeRecordResponseDTO;
 import com.root.authservice.dto.out.auth.TimeRecordResponseDTO;
+import com.root.authservice.exceptions.BadRequestException;
+import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.UUID;
@@ -32,14 +31,20 @@ public class TimeRecordControllers {
         return ResponseEntity.status(201).body(responseClient);
     }
 
-    @PostMapping("/request-update")
+    @PostMapping("/request-action")
     public ResponseEntity<PendingTimeRecordResponseDTO> requestTimeRecordUpdate(
             Authentication authentication,
+            @RequestParam(name = "action", required = true) PendingTimeRecordAction.ActionType actionType,
             @RequestBody @Valid NewPendingUpdateTimeRecord dto
     ) {
         UUID employeeId = UUID.fromString(authentication.getName());
 
+        if (actionType.equals(PendingTimeRecordAction.ActionType.UPDATE) && dto.getRecordHour() == null) {
+            throw new BadRequestException("recordHour must be provided to request update");
+        }
+
         PendingTimeRecordResponseDTO responseClient = this.timeRecordClientRest.requestUpdate(
+                actionType,
                 employeeId,
                 dto
         );

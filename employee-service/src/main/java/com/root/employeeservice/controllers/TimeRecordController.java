@@ -3,7 +3,7 @@ package com.root.employeeservice.controllers;
 import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import com.root.crossdbservice.entities.TimeRecord;
 import com.root.crossdbservice.entities.UserEntity;
-import com.root.employeeservice.dtos.in.NewPendingUpdateTimeRecord;
+import com.root.employeeservice.dtos.in.NewPendingUpdateTimeRecordDTO;
 import com.root.employeeservice.dtos.out.PendingTimeRecordResponseDTO;
 import com.root.employeeservice.dtos.out.TimeRecordResponseDTO;
 import com.root.employeeservice.services.TimeRecordService;
@@ -40,7 +40,7 @@ public class TimeRecordController {
     @PostMapping("/request-update")
     public PendingTimeRecordResponseDTO requestUpdate(
             @RequestParam("employeeId") UUID employeeId,
-            @RequestBody @Valid NewPendingUpdateTimeRecord dto
+            @RequestBody @Valid NewPendingUpdateTimeRecordDTO dto
     ) {
         PendingTimeRecordAction requestUpdate =
                 this.timeRecordService.requestTimeRecordUpdate(employeeId, dto.toEntity());

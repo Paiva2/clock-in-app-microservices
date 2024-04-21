@@ -10,6 +10,7 @@ import com.root.employeeservice.exceptions.*;
 import com.root.employeeservice.specifications.PendingTimeRecordActionSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,47 @@ public class PendingTimeRecordActionService {
         this.pendingTimeRecordActionSpecification = pendingTimeRecordActionSpecification;
         this.userManagerRepository = userManagerRepository;
         this.timeRecordRepository = timeRecordRepository;
+    }
+
+    public Page<PendingTimeRecordAction> listOwnPendingActions(
+            UUID userId,
+            boolean actionDone,
+            int page,
+            int perPage,
+            int month,
+            int year,
+            int day
+    ) {
+        if (userId == null) {
+            throw new BadRequestException("User id can't be empty");
+        }
+
+        if (page < 1) {
+            page = 1;
+        }
+
+        if (perPage > 50) {
+            perPage = 50;
+        } else if (perPage < 5) {
+            perPage = 5;
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, perPage, Sort.Direction.DESC, "createdAt");
+
+        UserEntity getEmployee = this.userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Employee not found"));
+
+        Specification<PendingTimeRecordAction> specification = Specification.where(
+                        this.pendingTimeRecordActionSpecification.employeeEq(getEmployee.getId())
+                ).and(this.pendingTimeRecordActionSpecification.actionDone(actionDone))
+                .and(month > 0 ? this.pendingTimeRecordActionSpecification.monthEq(month) : null)
+                .and(year > 0 ? this.pendingTimeRecordActionSpecification.yearEq(year) : null)
+                .and(day > 0 ? this.pendingTimeRecordActionSpecification.dayEq(day) : null);
+
+        Page<PendingTimeRecordAction> pageList =
+                this.pendingTimeRecordActionRepository.findAll(specification, pageable);
+
+        return pageList;
     }
 
     @Transactional

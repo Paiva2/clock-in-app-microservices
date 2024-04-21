@@ -2,15 +2,16 @@ package com.root.employeeservice.controllers;
 
 import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import com.root.employeeservice.dtos.out.PendingTimeRecordActionResponseDTO;
-import com.root.employeeservice.dtos.out.PendingTimeRecordUpdateListResponseDTO;
+import com.root.employeeservice.dtos.out.PendingTimeRecordListResponseDTO;
 import com.root.employeeservice.dtos.out.TimeRecordResponseDTO;
 import com.root.employeeservice.enums.OrderBy;
 import com.root.employeeservice.services.PendingTimeRecordActionService;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.Date;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,7 +26,7 @@ public class PendingTimeRecordController {
     }
 
     @GetMapping("/list")
-    public PendingTimeRecordUpdateListResponseDTO listAllPendingToUpdate(
+    public PendingTimeRecordListResponseDTO listAllPendingToUpdate(
             @RequestParam(value = "action", required = true, defaultValue = "UPDATE") PendingTimeRecordAction.ActionType actionType,
             @RequestParam(value = "managerId", required = true) UUID managerId,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
@@ -59,8 +60,8 @@ public class PendingTimeRecordController {
             );
         }
 
-        PendingTimeRecordUpdateListResponseDTO pendingTimeRecordUpdateListResponseDTO =
-                new PendingTimeRecordUpdateListResponseDTO(
+        PendingTimeRecordListResponseDTO pendingTimeRecordListResponseDTO =
+                new PendingTimeRecordListResponseDTO(
                         list.getNumber() + 1,
                         list.getSize(),
                         list.getTotalElements(),
@@ -79,7 +80,7 @@ public class PendingTimeRecordController {
                                 )).collect(Collectors.toList())
                 );
 
-        return pendingTimeRecordUpdateListResponseDTO;
+        return pendingTimeRecordListResponseDTO;
     }
 
     @PostMapping("/confirm-action/{pendingTimeRecordId}")
@@ -99,5 +100,53 @@ public class PendingTimeRecordController {
                     pendingTimeRecordId
             );
         }
+    }
+
+    @GetMapping("/list/own")
+    public PendingTimeRecordListResponseDTO listOwnPendingActions(
+            @RequestParam(value = "employeeId", required = true) UUID employeeId,
+            @RequestParam(name = "done", required = false, defaultValue = "false") boolean actionDone,
+            @RequestParam(name = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(name = "perPage", required = false, defaultValue = "5") int perPage,
+            @RequestParam(name = "month", required = false, defaultValue = "0")
+            @Min(value = 1, message = "month must be more than 1")
+            @Max(value = 12, message = "month must be less than 12")
+            int month,
+            @RequestParam(name = "year", required = false, defaultValue = "0") int year,
+            @Min(value = 1, message = "day must be more than 1")
+            @Max(value = 32, message = "day must be less than 32")
+            @RequestParam(name = "day", required = false, defaultValue = "0") int day
+    ) {
+        Page<PendingTimeRecordAction> pendingsPageable = this.pendingTimeRecordActionService.listOwnPendingActions(
+                employeeId,
+                actionDone,
+                page,
+                perPage,
+                month,
+                year,
+                day
+        );
+
+        PendingTimeRecordListResponseDTO pendingsListDto = new PendingTimeRecordListResponseDTO(
+                pendingsPageable.getNumber() + 1,
+                pendingsPageable.getSize(),
+                pendingsPageable.getTotalElements(),
+                pendingsPageable.getContent().stream().map(pendingAction ->
+                        new PendingTimeRecordActionResponseDTO(
+                                pendingAction.getId(),
+                                pendingAction.getActionType().actionName(),
+                                pendingAction.isActionDone(),
+                                pendingAction.getTimeUpdated(),
+                                new TimeRecordResponseDTO(
+                                        pendingAction.getTimeRecord().getId(),
+                                        pendingAction.getTimeRecord().getRecordHour(),
+                                        pendingAction.getTimeRecord().getCreatedAt()
+                                ),
+                                pendingAction.getCreatedAt()
+                        )
+                ).collect(Collectors.toList())
+        );
+
+        return pendingsListDto;
     }
 }

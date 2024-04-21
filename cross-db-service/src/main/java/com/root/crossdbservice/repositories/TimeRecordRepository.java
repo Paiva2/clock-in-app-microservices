@@ -1,6 +1,8 @@
 package com.root.crossdbservice.repositories;
 
 import com.root.crossdbservice.entities.TimeRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -31,7 +33,7 @@ public interface TimeRecordRepository extends JpaRepository<TimeRecord, UUID>, J
             @Param("month") int month,
             @Param("year") int year
     );
-    
+
     @Query("SELECT tc FROM TimeRecord tc " +
             "INNER JOIN FETCH tc.user usr " +
             "WHERE usr.id = :employeeId AND tc.id = :timeRecordId"

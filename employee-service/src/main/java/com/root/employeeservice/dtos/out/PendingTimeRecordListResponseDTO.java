@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PendingTimeRecordUpdateListResponseDTO {
+public class PendingTimeRecordListResponseDTO {
     int page;
     int perPage;
     long totalElements;

@@ -1,6 +1,6 @@
 package com.root.authservice.clients.employee_service_clients;
 
-import com.root.authservice.dto.out.auth.PendingTimeRecordUpdateListResponseDTO;
+import com.root.authservice.dto.out.auth.PendingTimeRecordListResponseDTO;
 import com.root.authservice.enums.OrderBy;
 import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.UUID;
 
 @FeignClient(
@@ -19,7 +21,7 @@ import java.util.UUID;
 @Component
 public interface PendingTimeRecordClient {
     @GetMapping("/list")
-    PendingTimeRecordUpdateListResponseDTO listAllPendingToUpdate(
+    PendingTimeRecordListResponseDTO listAllPendingToUpdate(
             @RequestParam(value = "action", required = true, defaultValue = "UPDATE") PendingTimeRecordAction.ActionType actionType,
             @RequestParam(value = "managerId", required = true) UUID managerId,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
@@ -35,5 +37,21 @@ public interface PendingTimeRecordClient {
             @PathVariable("pendingTimeRecordId") UUID pendingTimeRecordId,
             @RequestParam(name = "action", required = true) PendingTimeRecordAction.ActionType action,
             @RequestParam(name = "managerId", required = true) UUID managerId
+    );
+
+    @GetMapping("/list/own")
+    PendingTimeRecordListResponseDTO listAllOwnPendingActions(
+            @RequestParam(value = "employeeId", required = true) UUID employeeId,
+            @RequestParam(name = "done", required = false, defaultValue = "false") boolean actionDone,
+            @RequestParam(name = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(name = "perPage", required = false, defaultValue = "5") int perPage,
+            @RequestParam(name = "month", required = false, defaultValue = "0")
+            @Min(value = 1, message = "month must be more than 1")
+            @Max(value = 12, message = "month must be less than 12")
+            int month,
+            @RequestParam(name = "year", required = false, defaultValue = "0") int year,
+            @Min(value = 1, message = "day must be more than 1")
+            @Max(value = 32, message = "day must be less than 32")
+            @RequestParam(name = "day", required = false, defaultValue = "0") int day
     );
 }

@@ -26,7 +26,7 @@ public class PendingTimeRecordController {
     }
 
     @GetMapping("/list")
-    public PendingTimeRecordListResponseDTO listAllPendingToUpdate(
+    public PendingTimeRecordListResponseDTO listAlLPending(
             @RequestParam(value = "action", required = true, defaultValue = "UPDATE") PendingTimeRecordAction.ActionType actionType,
             @RequestParam(value = "managerId", required = true) UUID managerId,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
@@ -148,5 +148,8 @@ public class PendingTimeRecordController {
         );
 
         return pendingsListDto;
+    }
+
+    public void updatePendingAction() {
     }
 }

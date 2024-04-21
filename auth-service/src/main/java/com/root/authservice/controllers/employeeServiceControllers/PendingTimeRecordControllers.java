@@ -22,8 +22,8 @@ public class PendingTimeRecordControllers {
         this.pendingTimeRecordClient = pendingTimeRecordClient;
     }
 
-    @GetMapping("/list-update-pending")
-    public ResponseEntity<PendingTimeRecordListResponseDTO> listPendingToUpdate(
+    @GetMapping("/list/pending")
+    public ResponseEntity<PendingTimeRecordListResponseDTO> listAllPending(
             Authentication authentication,
             @RequestParam(value = "action", required = true, defaultValue = "UPDATE") PendingTimeRecordAction.ActionType actionType,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
@@ -36,7 +36,7 @@ public class PendingTimeRecordControllers {
         UUID managerId = UUID.fromString(authentication.getName());
 
         PendingTimeRecordListResponseDTO clientResponse =
-                this.pendingTimeRecordClient.listAllPendingToUpdate(
+                this.pendingTimeRecordClient.listAllPending(
                         actionType,
                         managerId,
                         page,

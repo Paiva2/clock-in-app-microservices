@@ -21,7 +21,7 @@ import java.util.UUID;
 @Component
 public interface PendingTimeRecordClient {
     @GetMapping("/list")
-    PendingTimeRecordListResponseDTO listAllPendingToUpdate(
+    PendingTimeRecordListResponseDTO listAllPending(
             @RequestParam(value = "action", required = true, defaultValue = "UPDATE") PendingTimeRecordAction.ActionType actionType,
             @RequestParam(value = "managerId", required = true) UUID managerId,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,

@@ -12,6 +12,8 @@ import com.root.employeeservice.exceptions.ConflictException;
 import com.root.employeeservice.exceptions.ForbiddenException;
 import com.root.employeeservice.exceptions.NotFoundException;
 import com.root.employeeservice.specifications.TimeRecordSpecification;
+import com.root.employeeservice.strategy.concrete.TimeRecordDateValidationStrategy;
+import com.root.employeeservice.strategy.context.DateValidator;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,6 +30,7 @@ public class TimeRecordService {
     private final UserRepository userRepository;
     private final PendingTimeRecordActionRepository pendingTimeRecordActionRepository;
     private final TimeRecordSpecification timeRecordSpecification;
+    private final DateValidator dateValidator;
 
     private static final Integer APP_LAUNCH_DATE = 2024;
 
@@ -40,6 +43,7 @@ public class TimeRecordService {
         this.userRepository = userRepository;
         this.pendingTimeRecordActionRepository = pendingTimeRecordActionRepository;
         this.timeRecordSpecification = timeRecordSpecification;
+        this.dateValidator = new DateValidator(new TimeRecordDateValidationStrategy());
     }
 
     public TimeRecord insertRegister(UserEntity employee) {
@@ -100,26 +104,7 @@ public class TimeRecordService {
             throw new ConflictException("Time record already has a pending action");
         }
 
-        boolean isNewDayEqualFromOriginalDay =
-                this.getDayOfTimeRecord(timeRecordToUpdate) == this.getDayOfTimeRecord(getTimeRecord);
-
-        boolean isNewMonthEqualFromOriginalMonth =
-                this.getMonthOfTimeRecord(timeRecordToUpdate) == this.getMonthOfTimeRecord(getTimeRecord);
-
-        boolean isNewYearEqualFromOriginalYear =
-                this.getYearOfTimeRecord(timeRecordToUpdate) == this.getYearOfTimeRecord(getTimeRecord);
-
-        if (!isNewDayEqualFromOriginalDay) {
-            throw new ConflictException("Updated date must be on the same day of time record creation");
-        }
-
-        if (!isNewMonthEqualFromOriginalMonth) {
-            throw new ConflictException("Updated date must be on the same month of time record creation");
-        }
-
-        if (!isNewYearEqualFromOriginalYear) {
-            throw new ConflictException("Updated date must be on the same year of time record creation");
-        }
+        this.dateValidator.checkIfDatesAreEquals(timeRecordToUpdate.getRecordHour(), getTimeRecord.getRecordHour());
 
         PendingTimeRecordAction newAction = new PendingTimeRecordAction();
         newAction.setTimeRecord(getTimeRecord);
@@ -195,21 +180,5 @@ public class TimeRecordService {
                 Sets.newHashSet(this.timeRecordRepository.findAll(specification, pageable).getContent());
 
         return listRecords;
-    }
-
-    private int getDayOfTimeRecord(TimeRecord timeRecord) {
-        return this.convertToLocalDate(timeRecord.getRecordHour()).getDayOfMonth();
-    }
-
-    private int getMonthOfTimeRecord(TimeRecord timeRecord) {
-        return this.convertToLocalDate(timeRecord.getRecordHour()).getMonthValue();
-    }
-
-    private int getYearOfTimeRecord(TimeRecord timeRecord) {
-        return this.convertToLocalDate(timeRecord.getRecordHour()).getYear();
-    }
-
-    private LocalDate convertToLocalDate(Date date) {
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 }

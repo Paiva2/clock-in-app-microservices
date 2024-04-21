@@ -8,6 +8,8 @@ import com.root.crossdbservice.repositories.UserRepository;
 import com.root.employeeservice.enums.OrderBy;
 import com.root.employeeservice.exceptions.*;
 import com.root.employeeservice.specifications.PendingTimeRecordActionSpecification;
+import com.root.employeeservice.strategy.concrete.ClonePropertiesBeanUtilsStrategy;
+import com.root.employeeservice.strategy.context.Cloner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,7 @@ public class PendingTimeRecordActionService {
     private final PendingTimeRecordActionSpecification pendingTimeRecordActionSpecification;
     private final UserManagerRepository userManagerRepository;
     private final TimeRecordRepository timeRecordRepository;
+    private final Cloner cloner;
 
     protected final List<String> rolesWithPermissionToBeSuperior = Arrays.asList(
             RoleEntity.Role.ADMIN.getRoleValue(),
@@ -41,6 +44,45 @@ public class PendingTimeRecordActionService {
         this.pendingTimeRecordActionSpecification = pendingTimeRecordActionSpecification;
         this.userManagerRepository = userManagerRepository;
         this.timeRecordRepository = timeRecordRepository;
+        this.cloner = new Cloner(new ClonePropertiesBeanUtilsStrategy());
+    }
+
+    public PendingTimeRecordAction updatePendingTimeRecord(
+            UUID employeeId,
+            PendingTimeRecordAction pendingTimeRecordAction
+    ) {
+        if (employeeId == null) {
+            throw new BadRequestException("Employee id can't be empty");
+        }
+
+        if (pendingTimeRecordAction == null) {
+            throw new BadRequestException("Pending time record action can't be empty");
+        } else if (pendingTimeRecordAction.getId() == null) {
+            throw new BadRequestException("Pending time record action id can't be empty");
+        }
+
+        UserEntity getEmployee = this.userRepository.findById(employeeId)
+                .orElseThrow(() -> new NotFoundException("Employee not found"));
+
+        if (getEmployee.getDisabled()) {
+            throw new ForbiddenException("Employee is disabled");
+        }
+
+        PendingTimeRecordAction getPendingAction = this.pendingTimeRecordActionRepository.findById(
+                pendingTimeRecordAction.getId()
+        ).orElseThrow(() -> new NotFoundException("Pending Action not found"));
+
+        TimeRecord originalTimeRecord = getPendingAction.getTimeRecord();
+
+        if (getPendingAction.isActionDone()) {
+            throw new ConflictException("Done actions can't be updated");
+        }
+
+        this.cloner.cloneNonNullProps(pendingTimeRecordAction, getPendingAction);
+
+        PendingTimeRecordAction updatedAction = this.pendingTimeRecordActionRepository.save(getPendingAction);
+
+        return updatedAction;
     }
 
     public Page<PendingTimeRecordAction> listOwnPendingActions(

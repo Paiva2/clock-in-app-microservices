@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.Set;
 import java.util.UUID;
 
@@ -35,6 +36,7 @@ public interface TimeRecordClientRest {
     Set<TimeRecordResponseDTO> listAllEmployeeRecords(
             @RequestParam(name = "employeeId", required = true) UUID employeeId,
             @RequestParam(name = "month", required = true) int month,
-            @RequestParam(name = "year", required = true) int year
+            @RequestParam(name = "year", required = true) int year,
+            @RequestParam(name = "day", required = false) int day
     );
 }

@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.Set;
 import java.util.UUID;
 
@@ -55,6 +56,8 @@ public class TimeRecordControllers {
     @GetMapping("/time-record/list")
     public ResponseEntity<Set<TimeRecordResponseDTO>> listAllEmployeeRecords(
             Authentication authentication,
+            @RequestParam(name = "day", required = false, defaultValue = "0")
+            @Min(value = 1, message = "day must be more than 0") int day,
             @RequestParam(name = "month", required = true) int month,
             @RequestParam(name = "year", required = true) int year
     ) {
@@ -63,7 +66,8 @@ public class TimeRecordControllers {
         Set<TimeRecordResponseDTO> clientResponse = this.timeRecordClientRest.listAllEmployeeRecords(
                 employeeId,
                 month,
-                year
+                year,
+                day
         );
 
         return ResponseEntity.status(200).body(clientResponse);

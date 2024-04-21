@@ -1,5 +1,6 @@
 package com.root.employeeservice.services;
 
+import com.google.common.collect.Sets;
 import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import com.root.crossdbservice.entities.TimeRecord;
 import com.root.crossdbservice.entities.UserEntity;
@@ -10,12 +11,15 @@ import com.root.employeeservice.exceptions.BadRequestException;
 import com.root.employeeservice.exceptions.ConflictException;
 import com.root.employeeservice.exceptions.ForbiddenException;
 import com.root.employeeservice.exceptions.NotFoundException;
+import com.root.employeeservice.specifications.TimeRecordSpecification;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -23,17 +27,19 @@ public class TimeRecordService {
     private final TimeRecordRepository timeRecordRepository;
     private final UserRepository userRepository;
     private final PendingTimeRecordActionRepository pendingTimeRecordActionRepository;
+    private final TimeRecordSpecification timeRecordSpecification;
 
     private static final Integer APP_LAUNCH_DATE = 2024;
 
     public TimeRecordService(
             TimeRecordRepository timeRecordRepository,
             UserRepository userRepository,
-            PendingTimeRecordActionRepository pendingTimeRecordActionRepository
+            PendingTimeRecordActionRepository pendingTimeRecordActionRepository, TimeRecordSpecification timeRecordSpecification
     ) {
         this.timeRecordRepository = timeRecordRepository;
         this.userRepository = userRepository;
         this.pendingTimeRecordActionRepository = pendingTimeRecordActionRepository;
+        this.timeRecordSpecification = timeRecordSpecification;
     }
 
     public TimeRecord insertRegister(UserEntity employee) {
@@ -159,7 +165,8 @@ public class TimeRecordService {
     public Set<TimeRecord> listEmployeeTimeRecords(
             UUID employeeId,
             int month,
-            int year
+            int year,
+            int day
     ) {
         if (employeeId == null) {
             throw new BadRequestException("Employee id can't be empty");
@@ -173,16 +180,19 @@ public class TimeRecordService {
             year = APP_LAUNCH_DATE;
         }
 
-        ZonedDateTime dateProvided = LocalDate.of(year, month, 1).atStartOfDay(ZoneId.of("UTC"));
-
         UserEntity getEmployee = this.userRepository.findById(employeeId)
                 .orElseThrow(() -> new NotFoundException("Employee not found"));
-        
-        Set<TimeRecord> listRecords = this.timeRecordRepository.findAllByEmployeeAndDate(
-                getEmployee.getId(),
-                dateProvided.toLocalDate().getMonthValue(),
-                dateProvided.toLocalDate().getYear()
-        );
+
+        Specification<TimeRecord> specification = Specification.where(
+                        this.timeRecordSpecification.employeeEq(getEmployee.getId())
+                ).and(this.timeRecordSpecification.monthEq(month))
+                .and(this.timeRecordSpecification.yearEq(year))
+                .and(day > 0 ? this.timeRecordSpecification.dayEq(day) : null);
+
+        Pageable pageable = PageRequest.of(0, 32, Sort.Direction.DESC, "createdAt");
+
+        Set<TimeRecord> listRecords =
+                Sets.newHashSet(this.timeRecordRepository.findAll(specification, pageable).getContent());
 
         return listRecords;
     }

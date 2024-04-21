@@ -10,6 +10,7 @@ import com.root.employeeservice.services.TimeRecordService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -68,12 +69,15 @@ public class TimeRecordController {
     public Set<TimeRecordResponseDTO> listUserTimeRecords(
             @RequestParam(name = "employeeId", required = true) UUID employeeId,
             @RequestParam(name = "month", required = true) int month,
-            @RequestParam(name = "year", required = true) int year
+            @RequestParam(name = "year", required = true) int year,
+            @RequestParam(name = "day", required = false, defaultValue = "0")
+            @Min(value = 1, message = "day must be more than 0") int day
     ) {
         Set<TimeRecord> recordsList = this.timeRecordService.listEmployeeTimeRecords(
                 employeeId,
                 month,
-                year
+                year,
+                day
         );
 
         Set<TimeRecordResponseDTO> listInDto = recordsList.stream()

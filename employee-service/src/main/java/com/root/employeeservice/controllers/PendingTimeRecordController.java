@@ -8,10 +8,8 @@ import com.root.employeeservice.enums.OrderBy;
 import com.root.employeeservice.services.PendingTimeRecordActionService;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.UUID;
@@ -82,5 +80,24 @@ public class PendingTimeRecordController {
                 );
 
         return pendingTimeRecordUpdateListResponseDTO;
+    }
+
+    @PostMapping("/confirm-action/{pendingTimeRecordId}")
+    public void proceedRequestedAction(
+            @PathVariable("pendingTimeRecordId") UUID pendingTimeRecordId,
+            @RequestParam(name = "action", required = true) PendingTimeRecordAction.ActionType action,
+            @RequestParam(name = "managerId", required = true) UUID managerId
+    ) {
+        if (action.equals(PendingTimeRecordAction.ActionType.UPDATE)) {
+            this.pendingTimeRecordActionService.confirmUpdate(
+                    managerId,
+                    pendingTimeRecordId
+            );
+        } else if (action.equals(PendingTimeRecordAction.ActionType.DELETE)) {
+            this.pendingTimeRecordActionService.confirmDeletion(
+                    managerId,
+                    pendingTimeRecordId
+            );
+        }
     }
 }

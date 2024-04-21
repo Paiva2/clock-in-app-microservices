@@ -1,11 +1,11 @@
 package com.root.crossdbservice.entities;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Date;
 import java.util.UUID;
 
@@ -15,7 +15,7 @@ public class TimeRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    
+
     @Column(name = "record_hour", updatable = true, nullable = false)
     private Date recordHour;
 
@@ -27,6 +27,12 @@ public class TimeRecord {
     @Column(name = "updated_at")
     private Date updatedAt;
 
+    @Column(name = "disabled", nullable = true)
+    private Boolean disabled = false;
+
+    @Column(name = "disabled_at", nullable = true)
+    private Date disabledAt;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     @Fetch(FetchMode.JOIN)
@@ -34,18 +40,37 @@ public class TimeRecord {
 
     @OneToOne(mappedBy = "timeRecord", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
+    @OnDelete(action = OnDeleteAction.NO_ACTION)
     private PendingTimeRecordAction pendingTimeRecordAction;
 
     public TimeRecord() {
     }
 
-    public TimeRecord(UUID id, Date recordHour, Date createdAt, Date updatedAt, UserEntity user, PendingTimeRecordAction pendingTimeRecordAction) {
+    public TimeRecord(UUID id, Date recordHour, Date createdAt, Date updatedAt, Boolean disabled, Date disabledAt, UserEntity user, PendingTimeRecordAction pendingTimeRecordAction) {
         this.id = id;
         this.recordHour = recordHour;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.disabled = disabled;
+        this.disabledAt = disabledAt;
         this.user = user;
         this.pendingTimeRecordAction = pendingTimeRecordAction;
+    }
+
+    public Boolean getDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(Boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    public Date getDisabledAt() {
+        return disabledAt;
+    }
+
+    public void setDisabledAt(Date disabledAt) {
+        this.disabledAt = disabledAt;
     }
 
     public PendingTimeRecordAction getPendingTimeRecordAction() {

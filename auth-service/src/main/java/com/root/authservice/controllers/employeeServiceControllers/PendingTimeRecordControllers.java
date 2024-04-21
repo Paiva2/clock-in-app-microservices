@@ -4,15 +4,10 @@ import com.root.authservice.clients.employee_service_clients.PendingTimeRecordCl
 import com.root.authservice.dto.out.auth.PendingTimeRecordUpdateListResponseDTO;
 import com.root.authservice.enums.OrderBy;
 import com.root.crossdbservice.entities.PendingTimeRecordAction;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.UUID;
 
 @RestController
@@ -50,5 +45,20 @@ public class PendingTimeRecordControllers {
                 );
 
         return ResponseEntity.status(200).body(clientResponse);
+    }
+
+    @PostMapping("/pending/{pendingTimeRecordId}")
+    public ResponseEntity<Void> performPendingAction(
+            @PathVariable("pendingTimeRecordId") UUID pendingTimeRecordId,
+            @RequestParam(name = "action", required = true) PendingTimeRecordAction.ActionType action,
+            Authentication authentication
+    ) {
+        this.pendingTimeRecordClient.performPendingAction(
+                pendingTimeRecordId,
+                action,
+                UUID.fromString(authentication.getName())
+        );
+
+        return ResponseEntity.status(201).build();
     }
 }

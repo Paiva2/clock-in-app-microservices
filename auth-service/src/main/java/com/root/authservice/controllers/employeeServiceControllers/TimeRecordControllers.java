@@ -1,6 +1,5 @@
 package com.root.authservice.controllers.employeeServiceControllers;
 
-import com.root.authservice.clients.employee_service_clients.EmployeeClientRest;
 import com.root.authservice.clients.employee_service_clients.TimeRecordClientRest;
 import com.root.authservice.dto.in.auth.NewPendingUpdateTimeRecord;
 import com.root.authservice.dto.out.auth.PendingTimeRecordResponseDTO;

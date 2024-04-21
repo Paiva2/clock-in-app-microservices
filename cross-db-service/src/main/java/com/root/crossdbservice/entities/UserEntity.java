@@ -50,12 +50,13 @@ public class UserEntity {
     private Set<UserRole> userRoles;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OnDelete(action = OnDeleteAction.NO_ACTION)
     @Fetch(FetchMode.JOIN)
     private Set<UserManager> userManager;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Fetch(FetchMode.JOIN)
+    @OnDelete(action = OnDeleteAction.NO_ACTION)
     private List<TimeRecord> timeRecords;
 
     public UserEntity() {

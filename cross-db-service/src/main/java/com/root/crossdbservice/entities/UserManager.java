@@ -1,11 +1,11 @@
 package com.root.crossdbservice.entities;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Date;
 import java.util.Objects;
 
@@ -16,14 +16,16 @@ public class UserManager {
     @JoinColumn(name = "id")
     private UserManagerKey userManagerKey = new UserManagerKey();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     @MapsId("user")
+    @OnDelete(action = OnDeleteAction.NO_ACTION)
     private UserEntity user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "manager_id")
     @MapsId("manager")
+    @OnDelete(action = OnDeleteAction.NO_ACTION)
     private UserEntity manager;
 
     @CreationTimestamp

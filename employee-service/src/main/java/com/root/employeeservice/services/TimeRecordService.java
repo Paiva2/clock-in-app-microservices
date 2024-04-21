@@ -82,6 +82,10 @@ public class TimeRecordService {
                 requesterId
         ).orElseThrow(() -> new NotFoundException("Time Record not found"));
 
+        if (getTimeRecord.getDisabled()) {
+            throw new ConflictException("Time record is disabled");
+        }
+
         Optional<PendingTimeRecordAction> timeRecordAlreadyHasPendingAction =
                 this.pendingTimeRecordActionRepository.findByTimeRecord(getTimeRecord);
 
@@ -131,6 +135,10 @@ public class TimeRecordService {
                 timeRecordToDelete.getId(),
                 requesterId
         ).orElseThrow(() -> new NotFoundException("Time Record not found"));
+
+        if (getTimeRecord.getDisabled()) {
+            throw new ConflictException("Time record is disabled");
+        }
 
         Optional<PendingTimeRecordAction> timeRecordAlreadyHasPendingAction =
                 this.pendingTimeRecordActionRepository.findByTimeRecord(getTimeRecord);

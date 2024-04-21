@@ -6,6 +6,8 @@ import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
@@ -26,5 +28,12 @@ public interface PendingTimeRecordClient {
             @RequestParam(value = "minDate", required = false) String minDate,
             @RequestParam(value = "maxDate", required = false) String maxDate,
             @RequestParam(value = "order", required = false, defaultValue = "asc") OrderBy orderBy
+    );
+
+    @PostMapping("/confirm-action/{pendingTimeRecordId}")
+    void performPendingAction(
+            @PathVariable("pendingTimeRecordId") UUID pendingTimeRecordId,
+            @RequestParam(name = "action", required = true) PendingTimeRecordAction.ActionType action,
+            @RequestParam(name = "managerId", required = true) UUID managerId
     );
 }

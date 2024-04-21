@@ -10,7 +10,9 @@ import com.root.employeeservice.services.TimeRecordService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/time")
@@ -60,5 +62,27 @@ public class TimeRecordController {
         );
 
         return pendingTimeRecordResponseDTO;
+    }
+
+    @GetMapping("/list-all")
+    public Set<TimeRecordResponseDTO> listUserTimeRecords(
+            @RequestParam(name = "employeeId", required = true) UUID employeeId,
+            @RequestParam(name = "month", required = true) int month,
+            @RequestParam(name = "year", required = true) int year
+    ) {
+        Set<TimeRecord> recordsList = this.timeRecordService.listEmployeeTimeRecords(
+                employeeId,
+                month,
+                year
+        );
+
+        Set<TimeRecordResponseDTO> listInDto = recordsList.stream()
+                .map(record -> new TimeRecordResponseDTO(
+                        record.getId(),
+                        record.getRecordHour(),
+                        record.getCreatedAt()
+                )).collect(Collectors.toSet());
+
+        return listInDto;
     }
 }

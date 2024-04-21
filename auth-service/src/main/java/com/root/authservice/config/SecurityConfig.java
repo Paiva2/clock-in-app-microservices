@@ -26,6 +26,7 @@ public class SecurityConfig {
         return http
                 .authorizeRequests(req -> {
                     //req.antMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll();
+                    req.antMatchers(HttpMethod.GET, "/api/v1/employee/pending/**").hasAnyRole("ADMIN", "HUMAN_RESOURCES", "MANAGER");
                     req.antMatchers(HttpMethod.GET, "/api/v1/employee/list-update-pending").hasAnyRole("ADMIN", "HUMAN_RESOURCES", "MANAGER");
                     req.antMatchers(HttpMethod.PATCH, "/api/v1/employee/active/**").hasAnyRole("ADMIN", "HUMAN_RESOURCES");
                     req.antMatchers(HttpMethod.DELETE, "/api/v1/employee/disable/**").hasAnyRole("ADMIN", "HUMAN_RESOURCES");

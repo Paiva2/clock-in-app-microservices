@@ -6,9 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public interface TimeRecordRepository extends JpaRepository<TimeRecord, UUID> {
@@ -29,6 +27,21 @@ public interface TimeRecordRepository extends JpaRepository<TimeRecord, UUID> {
     Set<TimeRecord> findAllByEmployeeAndDay(
             @Param("employeeId") UUID employeeId,
             @Param("day") int day,
+            @Param("month") int month,
+            @Param("year") int year
+    );
+
+
+    @Query("SELECT tc FROM TimeRecord tc " +
+            "INNER JOIN FETCH tc.user usr " +
+            "WHERE usr.id = :employeeId " +
+            "AND month(tc.createdAt) = :month " +
+            "AND year(tc.createdAt) = :year " +
+            "AND tc.disabled IS NOT TRUE " +
+            "ORDER BY tc.createdAt ASC"
+    )
+    Set<TimeRecord> findAllByEmployeeAndDate(
+            @Param("employeeId") UUID employeeId,
             @Param("month") int month,
             @Param("year") int year
     );

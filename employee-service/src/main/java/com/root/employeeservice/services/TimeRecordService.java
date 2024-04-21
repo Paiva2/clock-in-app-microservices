@@ -12,11 +12,10 @@ import com.root.employeeservice.exceptions.ForbiddenException;
 import com.root.employeeservice.exceptions.NotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -24,6 +23,8 @@ public class TimeRecordService {
     private final TimeRecordRepository timeRecordRepository;
     private final UserRepository userRepository;
     private final PendingTimeRecordActionRepository pendingTimeRecordActionRepository;
+
+    private static final Integer APP_LAUNCH_DATE = 2024;
 
     public TimeRecordService(
             TimeRecordRepository timeRecordRepository,
@@ -153,6 +154,37 @@ public class TimeRecordService {
         newAction.setTimeUpdated(null);
 
         return this.pendingTimeRecordActionRepository.save(newAction);
+    }
+
+    public Set<TimeRecord> listEmployeeTimeRecords(
+            UUID employeeId,
+            int month,
+            int year
+    ) {
+        if (employeeId == null) {
+            throw new BadRequestException("Employee id can't be empty");
+        }
+
+        if (month < 1 || month > 12) {
+            throw new BadRequestException("Month must start at 1 and end at 12");
+        }
+
+        if (year < APP_LAUNCH_DATE) {
+            year = APP_LAUNCH_DATE;
+        }
+
+        ZonedDateTime dateProvided = LocalDate.of(year, month, 1).atStartOfDay(ZoneId.of("UTC"));
+
+        UserEntity getEmployee = this.userRepository.findById(employeeId)
+                .orElseThrow(() -> new NotFoundException("Employee not found"));
+        
+        Set<TimeRecord> listRecords = this.timeRecordRepository.findAllByEmployeeAndDate(
+                getEmployee.getId(),
+                dateProvided.toLocalDate().getMonthValue(),
+                dateProvided.toLocalDate().getYear()
+        );
+
+        return listRecords;
     }
 
     private int getDayOfTimeRecord(TimeRecord timeRecord) {

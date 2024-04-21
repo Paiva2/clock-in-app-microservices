@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -49,5 +50,22 @@ public class TimeRecordControllers {
         );
 
         return ResponseEntity.status(201).body(responseClient);
+    }
+
+    @GetMapping("/time-record/list")
+    public ResponseEntity<Set<TimeRecordResponseDTO>> listAllEmployeeRecords(
+            Authentication authentication,
+            @RequestParam(name = "month", required = true) int month,
+            @RequestParam(name = "year", required = true) int year
+    ) {
+        UUID employeeId = UUID.fromString(authentication.getName());
+
+        Set<TimeRecordResponseDTO> clientResponse = this.timeRecordClientRest.listAllEmployeeRecords(
+                employeeId,
+                month,
+                year
+        );
+
+        return ResponseEntity.status(200).body(clientResponse);
     }
 }

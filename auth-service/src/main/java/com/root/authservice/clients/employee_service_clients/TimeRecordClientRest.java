@@ -6,11 +6,13 @@ import com.root.authservice.dto.out.auth.TimeRecordResponseDTO;
 import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
+import java.util.Set;
 import java.util.UUID;
 
 @FeignClient(
@@ -27,5 +29,12 @@ public interface TimeRecordClientRest {
             @RequestParam(name = "action", required = true) PendingTimeRecordAction.ActionType actionType,
             @RequestParam("employeeId") UUID employeeId,
             @RequestBody @Valid NewPendingUpdateTimeRecord dto
+    );
+
+    @GetMapping("/list-all")
+    Set<TimeRecordResponseDTO> listAllEmployeeRecords(
+            @RequestParam(name = "employeeId", required = true) UUID employeeId,
+            @RequestParam(name = "month", required = true) int month,
+            @RequestParam(name = "year", required = true) int year
     );
 }

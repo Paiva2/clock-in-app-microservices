@@ -1,5 +1,6 @@
 package com.root.employeeservice.producers;
 
+import com.root.employeeservice.entities.EmailEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -17,11 +18,11 @@ public class MailMessageProducer {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public NewMailProducer(RabbitTemplate rabbitTemplate) {
+    public MailMessageProducer(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void produceMailMessage(String message) {
+    public void produceMailMessage(EmailEntity message) {
         this.rabbitTemplate.convertAndSend(this.exchangeName, this.routingKey, message);
 
         LOGGER.info("New message sent from Mail Message Producer!");

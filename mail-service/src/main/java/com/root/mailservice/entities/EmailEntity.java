@@ -1,4 +1,4 @@
-package com.root.employeeservice.entities;
+package com.root.mailservice.entities;
 
 import lombok.Data;
 

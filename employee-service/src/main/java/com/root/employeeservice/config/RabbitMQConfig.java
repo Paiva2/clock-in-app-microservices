@@ -1,4 +1,4 @@
-package com.root.mailservice.config;
+package com.root.employeeservice.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +13,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
-    @Value("${rabbitmq.queue.name}")
+    @Value("${rabbitmq.mail-queue.name}")
     private String queueName;
-    @Value("${rabbitmq.routing.key}")
+    @Value("${rabbitmq.mail-routing.key}")
     private String routingKey;
-    @Value("${rabbitmq.exchange.name}")
+    @Value("${rabbitmq.mail-exchange.name}")
     private String exchangeName;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConfig.class);

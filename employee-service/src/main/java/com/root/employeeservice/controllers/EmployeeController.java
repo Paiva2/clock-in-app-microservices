@@ -9,9 +9,12 @@ import com.root.employeeservice.dtos.in.RegisterUserDto;
 import com.root.employeeservice.dtos.in.SuperiorAttachRequestDTO;
 import com.root.employeeservice.dtos.in.UpdateEmployeeProfileDTO;
 import com.root.employeeservice.dtos.out.*;
+import com.root.employeeservice.entities.EmailEntity;
 import com.root.employeeservice.enums.OrderBy;
+import com.root.employeeservice.producers.MailMessageProducer;
 import com.root.employeeservice.services.EmployeeService;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -22,9 +25,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1")
 public class EmployeeController {
     private final EmployeeService employeeService;
+    private final MailMessageProducer mailMessageProducer;
 
-    public EmployeeController(EmployeeService employeeService) {
+    public EmployeeController(EmployeeService employeeService, MailMessageProducer mailMessageProducer) {
         this.employeeService = employeeService;
+        this.mailMessageProducer = mailMessageProducer;
     }
 
     @PostMapping("/register/hr")
@@ -40,6 +45,17 @@ public class EmployeeController {
     @PostMapping("/register/manager")
     public void registerManager(@RequestBody @Valid RegisterUserDto dto) {
         this.employeeService.registerManager(dto.toEntity());
+    }
+
+    @PostMapping("/forgot-password")
+    public void forgotPassword() {
+        EmailEntity email = new EmailEntity();
+        email.setFrom("teste@email.com");
+        email.setTo("teste@email.com");
+        email.setSubject("TEST SUBJECT");
+        email.setMessage("MESSAGE TEST");
+
+        this.mailMessageProducer.produceMailMessage(email);
     }
 
     @GetMapping("/list")

@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -46,6 +47,15 @@ public class EmployeeControllers {
         this.employeeClientRest.requestRegisterEmployee(dto);
 
         return ResponseEntity.status(201).build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword() {
+        this.employeeClientRest.requestForgotPassword();
+
+        return ResponseEntity.status(200).body(
+                Collections.singletonMap("message", "A new password was sent to your e-mail")
+        );
     }
 
     @GetMapping("/profile")

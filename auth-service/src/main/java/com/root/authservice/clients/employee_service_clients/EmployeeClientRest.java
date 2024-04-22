@@ -34,6 +34,9 @@ public interface EmployeeClientRest {
     @PostMapping(value = "/attach-superior")
     Map<String, String> attachSuperiorToEmployee(@RequestBody SuperiorAttachRequestDTO requestBody);
 
+    @PostMapping(value = "/forgot-password")
+    void requestForgotPassword();
+
     @DeleteMapping(value = "/disable/{employeeId}")
     Map<String, String> disableEmployee(
             @PathVariable("employeeId") UUID employeeId,

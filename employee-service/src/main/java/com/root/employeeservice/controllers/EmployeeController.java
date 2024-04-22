@@ -5,6 +5,7 @@ import com.root.crossdbservice.entities.RoleEntity;
 import com.root.crossdbservice.entities.UserEntity;
 import com.root.crossdbservice.entities.UserManager;
 import com.root.crossdbservice.entities.UserRole;
+import com.root.employeeservice.dtos.in.ForgotPasswordEmployeeDTO;
 import com.root.employeeservice.dtos.in.RegisterUserDto;
 import com.root.employeeservice.dtos.in.SuperiorAttachRequestDTO;
 import com.root.employeeservice.dtos.in.UpdateEmployeeProfileDTO;
@@ -48,14 +49,10 @@ public class EmployeeController {
     }
 
     @PostMapping("/forgot-password")
-    public void forgotPassword() {
-        EmailEntity email = new EmailEntity();
-        email.setFrom("teste@email.com");
-        email.setTo("teste@email.com");
-        email.setSubject("TEST SUBJECT");
-        email.setMessage("MESSAGE TEST");
-
-        this.mailMessageProducer.produceMailMessage(email);
+    public void forgotPassword(
+            @RequestBody @Valid ForgotPasswordEmployeeDTO dto
+    ) {
+        this.employeeService.forgotPassword(dto.getEmail());
     }
 
     @GetMapping("/list")

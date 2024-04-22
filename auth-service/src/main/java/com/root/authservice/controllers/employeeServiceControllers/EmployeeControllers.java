@@ -1,6 +1,7 @@
 package com.root.authservice.controllers.employeeServiceControllers;
 
 import com.root.authservice.clients.employee_service_clients.EmployeeClientRest;
+import com.root.authservice.dto.in.auth.ForgotPasswordEmployeeDTO;
 import com.root.authservice.dto.in.auth.RegisterUserDto;
 import com.root.authservice.dto.in.auth.SuperiorAttachRequestDTO;
 import com.root.authservice.dto.in.auth.UpdateEmployeeProfileDTO;
@@ -50,8 +51,10 @@ public class EmployeeControllers {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Map<String, String>> forgotPassword() {
-        this.employeeClientRest.requestForgotPassword();
+    public ResponseEntity<Map<String, String>> forgotPassword(
+            @RequestBody @Valid ForgotPasswordEmployeeDTO dto
+    ) {
+        this.employeeClientRest.requestForgotPassword(dto);
 
         return ResponseEntity.status(200).body(
                 Collections.singletonMap("message", "A new password was sent to your e-mail")

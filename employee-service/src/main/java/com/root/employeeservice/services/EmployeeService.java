@@ -8,8 +8,10 @@ import com.root.crossdbservice.repositories.RoleRepository;
 import com.root.crossdbservice.repositories.UserManagerRepository;
 import com.root.crossdbservice.repositories.UserRepository;
 import com.root.crossdbservice.repositories.UserRoleRepository;
+import com.root.employeeservice.entities.EmailEntity;
 import com.root.employeeservice.enums.OrderBy;
 import com.root.employeeservice.exceptions.*;
+import com.root.employeeservice.producers.MailMessageProducer;
 import com.root.employeeservice.specifications.EmployeeSpecification;
 import com.root.employeeservice.strategy.concrete.ClonePropertiesBeanUtilsStrategy;
 import com.root.employeeservice.strategy.concrete.EncryptBcryptStrategy;
@@ -45,20 +47,48 @@ public class EmployeeService {
     private final Encryptor passwordEncoder;
     private final MailValidator mailValidator;
 
+    private final MailMessageProducer mailMessageProducer;
+
     public EmployeeService(
             UserRepository userRepository,
             UserRoleRepository userRoleRepository,
             RoleRepository roleRepository,
-            UserManagerRepository userManagerRepository, EmployeeSpecification employeeSpecification
+            UserManagerRepository userManagerRepository, EmployeeSpecification employeeSpecification, MailMessageProducer mailMessageProducer
     ) {
         this.userRepository = userRepository;
         this.userManagerRepository = userManagerRepository;
         this.userRoleRepository = userRoleRepository;
         this.roleRepository = roleRepository;
         this.employeeSpecification = employeeSpecification;
+        this.mailMessageProducer = mailMessageProducer;
         this.cloneProperties = new Cloner(new ClonePropertiesBeanUtilsStrategy());
         this.passwordEncoder = new Encryptor(new EncryptBcryptStrategy());
         this.mailValidator = new MailValidator(new MailValidatorRegexStrategy());
+    }
+
+    public void forgotPassword(String email) {
+        if (email == null) {
+            throw new BadRequestException("Provided e-mail can't be empty");
+        }
+
+        UserEntity getUser = this.userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Employee not found"));
+
+
+        String newPassword = UUID.randomUUID().toString();
+
+        String newHashedPassword = this.passwordEncoder.encrypt(newPassword);
+
+        getUser.setPassword(newHashedPassword);
+        this.userRepository.save(getUser);
+
+        EmailEntity emailEntity = new EmailEntity();
+        emailEntity.setSubject("Clock In App - Request Password Reset");
+        emailEntity.setTo(getUser.getEmail());
+        String forgotPassMessage = emailEntity.forgotPasswordMessage(newPassword);
+        emailEntity.setMessage(forgotPassMessage);
+
+        this.mailMessageProducer.produceMailMessage(emailEntity);
     }
 
     public UserEntity requesterProfile(UUID userId) {

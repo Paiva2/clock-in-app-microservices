@@ -26,7 +26,7 @@ public class RabbitMQConfig {
     public Queue queue() {
         LOGGER.info("{} Queue created.", this.queueName);
 
-        return new Queue(this.queueName, true);
+        return new Queue(this.queueName);
     }
 
     @Bean

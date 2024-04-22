@@ -33,6 +33,7 @@ public class SecurityConfig {
                     req.antMatchers(HttpMethod.POST, "/api/v1/employee/register").hasAnyRole("ADMIN", "HUMAN_RESOURCES");
                     req.antMatchers(HttpMethod.POST, "/api/v1/employee/register/manager").hasAnyRole("ADMIN", "HUMAN_RESOURCES");
                     req.antMatchers(HttpMethod.POST, "/api/v1/employee/register/hr").hasRole("ADMIN");
+                    req.antMatchers(HttpMethod.POST, "/api/v1/employee/forgot-password").permitAll();
                     req.antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll();
                     req.anyRequest().authenticated();
                 })

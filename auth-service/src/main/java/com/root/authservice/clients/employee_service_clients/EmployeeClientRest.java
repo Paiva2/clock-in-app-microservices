@@ -1,5 +1,6 @@
 package com.root.authservice.clients.employee_service_clients;
 
+import com.root.authservice.dto.in.auth.ForgotPasswordEmployeeDTO;
 import com.root.authservice.dto.in.auth.RegisterUserDto;
 import com.root.authservice.dto.in.auth.SuperiorAttachRequestDTO;
 import com.root.authservice.dto.in.auth.UpdateEmployeeProfileDTO;
@@ -35,7 +36,7 @@ public interface EmployeeClientRest {
     Map<String, String> attachSuperiorToEmployee(@RequestBody SuperiorAttachRequestDTO requestBody);
 
     @PostMapping(value = "/forgot-password")
-    void requestForgotPassword();
+    void requestForgotPassword(@RequestBody ForgotPasswordEmployeeDTO dto);
 
     @DeleteMapping(value = "/disable/{employeeId}")
     Map<String, String> disableEmployee(

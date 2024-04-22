@@ -12,3 +12,12 @@ services:
       - POSTGRES_USER=local
       - POSTGRES_PASSWORD=local123
       - POSTGRES_DB=clock-in-app
+  rabbit-mq:
+    container_name: "clock-in-rabbit-mq"
+    image: "rabbitmq:3-management-alpine"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    expose:
+      - 5672
+      - 15672

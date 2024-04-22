@@ -1,13 +1,16 @@
 package com.root.authservice.controllers.employeeServiceControllers;
 
 import com.root.authservice.clients.employee_service_clients.PendingTimeRecordClient;
+import com.root.authservice.dto.in.auth.UpdatePendingTimeRecordActionDTO;
 import com.root.authservice.dto.out.auth.PendingTimeRecordListResponseDTO;
+import com.root.authservice.dto.out.auth.PendingTimeRecordResponseDTO;
 import com.root.authservice.enums.OrderBy;
 import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
@@ -63,6 +66,23 @@ public class PendingTimeRecordControllers {
         );
 
         return ResponseEntity.status(201).build();
+    }
+
+    @PatchMapping("/pending/update/{pendingTimeRecordId}")
+    public ResponseEntity<PendingTimeRecordResponseDTO> updateOwnPendingAction(
+            @RequestBody @Valid UpdatePendingTimeRecordActionDTO dto,
+            @PathVariable("pendingTimeRecordId") UUID pendingTimeRecordId,
+            Authentication authentication
+    ) {
+        UUID employeeId = UUID.fromString(authentication.getName());
+
+        PendingTimeRecordResponseDTO clientResponse = this.pendingTimeRecordClient.updateOwnPendingAction(
+                employeeId,
+                dto,
+                pendingTimeRecordId
+        );
+
+        return ResponseEntity.status(201).body(clientResponse);
     }
 
     @GetMapping("/pending/list/own")

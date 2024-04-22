@@ -9,7 +9,9 @@ import com.root.employeeservice.enums.OrderBy;
 import com.root.employeeservice.exceptions.*;
 import com.root.employeeservice.specifications.PendingTimeRecordActionSpecification;
 import com.root.employeeservice.strategy.concrete.ClonePropertiesBeanUtilsStrategy;
+import com.root.employeeservice.strategy.concrete.TimeRecordDateValidationStrategy;
 import com.root.employeeservice.strategy.context.Cloner;
+import com.root.employeeservice.strategy.context.DateValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +29,11 @@ public class PendingTimeRecordActionService {
     private final PendingTimeRecordActionSpecification pendingTimeRecordActionSpecification;
     private final UserManagerRepository userManagerRepository;
     private final TimeRecordRepository timeRecordRepository;
-    private final Cloner cloner;
 
-    protected final List<String> rolesWithPermissionToBeSuperior = Arrays.asList(
+    private final Cloner cloner;
+    private final DateValidator dateValidator;
+
+    private final List<String> rolesWithPermissionToBeSuperior = Arrays.asList(
             RoleEntity.Role.ADMIN.getRoleValue(),
             RoleEntity.Role.HUMAN_RESOURCES.getRoleValue()
     );
@@ -44,7 +48,9 @@ public class PendingTimeRecordActionService {
         this.pendingTimeRecordActionSpecification = pendingTimeRecordActionSpecification;
         this.userManagerRepository = userManagerRepository;
         this.timeRecordRepository = timeRecordRepository;
+
         this.cloner = new Cloner(new ClonePropertiesBeanUtilsStrategy());
+        this.dateValidator = new DateValidator(new TimeRecordDateValidationStrategy());
     }
 
     public PendingTimeRecordAction updatePendingTimeRecord(
@@ -61,6 +67,9 @@ public class PendingTimeRecordActionService {
             throw new BadRequestException("Pending time record action id can't be empty");
         }
 
+        boolean isChangingActionToUpdate =
+                pendingTimeRecordAction.getActionType().equals(PendingTimeRecordAction.ActionType.UPDATE);
+
         UserEntity getEmployee = this.userRepository.findById(employeeId)
                 .orElseThrow(() -> new NotFoundException("Employee not found"));
 
@@ -74,11 +83,26 @@ public class PendingTimeRecordActionService {
 
         TimeRecord originalTimeRecord = getPendingAction.getTimeRecord();
 
+        if (!originalTimeRecord.getUser().getId().equals(employeeId)) {
+            throw new ForbiddenException("Insufficient permissions");
+        }
+
+        if (isChangingActionToUpdate && pendingTimeRecordAction.getTimeUpdated() != null) {
+            this.dateValidator.checkIfDatesAreEquals(
+                    pendingTimeRecordAction.getTimeUpdated(),
+                    originalTimeRecord.getRecordHour()
+            );
+        }
+
         if (getPendingAction.isActionDone()) {
             throw new ConflictException("Done actions can't be updated");
         }
 
         this.cloner.cloneNonNullProps(pendingTimeRecordAction, getPendingAction);
+
+        if (!isChangingActionToUpdate) {
+            getPendingAction.setTimeUpdated(null);
+        }
 
         PendingTimeRecordAction updatedAction = this.pendingTimeRecordActionRepository.save(getPendingAction);
 

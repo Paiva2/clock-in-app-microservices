@@ -1,15 +1,15 @@
 package com.root.authservice.clients.employee_service_clients;
 
+import com.root.authservice.dto.in.auth.UpdatePendingTimeRecordActionDTO;
 import com.root.authservice.dto.out.auth.PendingTimeRecordListResponseDTO;
+import com.root.authservice.dto.out.auth.PendingTimeRecordResponseDTO;
 import com.root.authservice.enums.OrderBy;
 import com.root.crossdbservice.entities.PendingTimeRecordAction;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.UUID;
@@ -53,5 +53,12 @@ public interface PendingTimeRecordClient {
             @Min(value = 1, message = "day must be more than 1")
             @Max(value = 32, message = "day must be less than 32")
             @RequestParam(name = "day", required = false, defaultValue = "0") int day
+    );
+
+    @PutMapping("/update/{pendingTimeRecordId}")
+    PendingTimeRecordResponseDTO updateOwnPendingAction(
+            @RequestParam(value = "employeeId") UUID employeeId,
+            @RequestBody @Valid UpdatePendingTimeRecordActionDTO dto,
+            @PathVariable("pendingTimeRecordId") UUID pendingTimeRecordId
     );
 }

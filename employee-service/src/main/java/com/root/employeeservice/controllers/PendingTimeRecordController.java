@@ -1,8 +1,10 @@
 package com.root.employeeservice.controllers;
 
 import com.root.crossdbservice.entities.PendingTimeRecordAction;
+import com.root.employeeservice.dtos.in.UpdatePendingTimeRecordActionDTO;
 import com.root.employeeservice.dtos.out.PendingTimeRecordActionResponseDTO;
 import com.root.employeeservice.dtos.out.PendingTimeRecordListResponseDTO;
+import com.root.employeeservice.dtos.out.PendingTimeRecordResponseDTO;
 import com.root.employeeservice.dtos.out.TimeRecordResponseDTO;
 import com.root.employeeservice.enums.OrderBy;
 import com.root.employeeservice.services.PendingTimeRecordActionService;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.Date;
@@ -150,6 +153,24 @@ public class PendingTimeRecordController {
         return pendingsListDto;
     }
 
-    public void updatePendingAction() {
+    @PutMapping("/update/{pendingTimeRecordId}")
+    public PendingTimeRecordResponseDTO updatePendingAction(
+            @RequestParam(value = "employeeId") UUID employeeId,
+            @RequestBody @Valid UpdatePendingTimeRecordActionDTO dto,
+            @PathVariable("pendingTimeRecordId") UUID pendingTimeRecordId
+    ) {
+        PendingTimeRecordAction pendingUpdated = this.pendingTimeRecordActionService.updatePendingTimeRecord(
+                employeeId,
+                dto.toEntity(pendingTimeRecordId)
+        );
+
+        PendingTimeRecordResponseDTO pendingTimeRecordResponseDTO =
+                new PendingTimeRecordResponseDTO(
+                        pendingUpdated.getId(),
+                        pendingUpdated.getActionType(),
+                        pendingUpdated.getTimeUpdated()
+                );
+
+        return pendingTimeRecordResponseDTO;
     }
 }
